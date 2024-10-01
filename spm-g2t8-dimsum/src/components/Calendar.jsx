@@ -32,7 +32,7 @@ const CustomToolbar = ({ date, onNavigate }) => {
 };
 
 const WFHCalendar = () => {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(moment()); 
   const [eventData, setEventData] = useState({
     wfh: [
       { name: 'Jack Sim', type: 'am' },

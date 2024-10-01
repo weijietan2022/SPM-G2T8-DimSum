@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import './css/App.css';
 import Navbar from './components/Navbar';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import WFHCalendar from './components/Calendar';
-import YourRequests from './components/YourRequests';  // Import your other components
+import YourRequests from './components/YourRequests';  
+import { AuthContext } from './context/AuthContext';
 
 const events = [
   { wfh:[
@@ -16,11 +17,11 @@ const events = [
     {name: 'Jack Sim', type:'pm'},
     {name: 'Aravind', type: 'fullDay'},
     ]}
-  // More events here
 ];
 
 const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, logout } = useContext(AuthContext);  
 
   const handleLogin = () => {
     setIsAuthenticated(true);
@@ -32,13 +33,13 @@ const App = () => {
 
   return (
     <Routes>
-      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route path="/login" element={<Login />} />
 
       {isAuthenticated ? (
         <>
           <Route path="/" element={<Navigate to="/calendar" />} />
-          <Route path="/yourrequests" element={<><Navbar onLogout={handleLogout} /><YourRequests /></>} />
-          <Route path="/calendar" element={<><Navbar onLogout={handleLogout} /><WFHCalendar events={events}/></>} />
+          <Route path="/yourrequests" element={<><Navbar/><YourRequests /></>} />
+          <Route path="/calendar" element={<><Navbar  /><WFHCalendar events={events}/></>} />
         </>
       ) : (
         <Route path="*" element={<Navigate to="/login" />} />

@@ -1,11 +1,12 @@
 from flask import Flask, request, jsonify, flash, redirect, url_for
 from flask_cors import CORS
+## Do pip install pymongo in your terminal
 from pymongo import MongoClient
 
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/api/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 
 connection_string = "mongodb+srv://wxlum2022:PbQciwo6xIcw0eqt@assignment.9wecd.mongodb.net/"
@@ -25,9 +26,11 @@ def handle_login():
 
     # Query the MongoDB collection to verify the email and Staff_ID (password)
     user = collection.find_one({"Email": email, "Staff_ID": int(password)})
+    staffName = user['Staff_FName'] + " " + user['Staff_LName']
 
     if user:
-        return jsonify({"status": "success", "message": f"Hello {user['Staff_FName']}!"}), 200
+        return jsonify({"status": "success", "message": f"Hello {user['Staff_FName']}!", 
+                        "uid": user['Staff_ID'], "name": staffName}), 200
     else:
         return jsonify({"status": "fail", "message": "Invalid email or password."}), 401
 
