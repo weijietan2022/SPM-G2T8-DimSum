@@ -4,12 +4,36 @@ import './LoginForm.css'; // Import the CSS file for styling
 const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Logic for handling login
-    console.log('Email:', email);
-    console.log('Password:', password);
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage(data.message);  // Set success message from Flask
+        setErrorMessage('');  // Clear error message
+      } else {
+        setErrorMessage(data.message);  // Set error message from Flask
+        setSuccessMessage('');  // Clear success message
+      }
+    } catch (error) {
+      setErrorMessage('An error occurred. Please try again.');
+    }
   };
 
   return (
@@ -38,6 +62,9 @@ const LoginForm = () => {
               required
             />
           </div>
+
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          {successMessage && <p className="success-message">{successMessage}</p>}
 
           <button type="submit" className="login-button">Login</button>
         </form>
