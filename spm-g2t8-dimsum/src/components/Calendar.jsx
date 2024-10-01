@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -8,15 +8,15 @@ const localizer = momentLocalizer(moment);
 
 const CustomToolbar = ({ date, onNavigate }) => {
   const handlePrevious = () => {
-    onNavigate('PREV');
+    onNavigate('PREV'); // Move to the previous month
   };
 
   const handleNext = () => {
-    onNavigate('NEXT');
+    onNavigate('NEXT'); // Move to the next month
   };
 
   const handleToday = () => {
-    onNavigate('TODAY');
+    onNavigate('TODAY'); // Move to the current date
   };
 
   return (
@@ -31,9 +31,19 @@ const CustomToolbar = ({ date, onNavigate }) => {
   );
 };
 
-const WFHCalendar = ({ events }) => {
+const WFHCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
-  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [eventData, setEventData] = useState({
+    wfh: [
+      { name: 'Jack Sim', type: 'am' },
+      { name: 'Carrington', type: 'fullDay' },
+      { name: 'Tony Lopez', type: 'fullDay' }
+    ],
+    inOffice: [
+      { name: 'Jack Sim', type: 'pm' },
+      { name: 'Aravind', type: 'fullDay' },
+    ]
+  }); // Store API data
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [month, setMonth] = useState(new Date().getMonth());
@@ -44,36 +54,42 @@ const WFHCalendar = ({ events }) => {
 
   // Handle clicks on date cells (slots)
   const handleSlotClick = (slotInfo) => {
-    setSelectedDate(slotInfo.start); // Set the selected date from slot
+    setSelectedDate(slotInfo.start); // Set the selected date
     setFilter('all'); // Reset filter to 'all'
   };
-
-  // Filter events based on selected date, filter type, and search term
-  useEffect(() => {
-    if (selectedDate) {
-      const filtered = events.filter((event) => {
-        const isSameDay = moment(event.start).isSame(selectedDate, 'day'); // Correct comparison for same day
-        const matchesFilter = filter === 'all' || event.status === filter;
-        const matchesSearch = event.teamMember.toLowerCase().includes(searchTerm.toLowerCase());
-        return isSameDay && matchesFilter && matchesSearch;
-      });
-      setFilteredEvents(filtered);
-    }
-  }, [filter, searchTerm, selectedDate, events]);
 
   // Highlight the selected date cell
   const dayPropGetter = (date) => {
     const isSelected = moment(date).isSame(selectedDate, 'day');
-    return {
-      className: isSelected ? 'highlighted-cell' : ''
-    };
+    return { className: isSelected ? 'highlighted-cell' : '' };
+  };
+
+  // Function to filter team members based on search term and filter
+  const filterMembers = (members) => {
+    return members.filter((person) => 
+      person.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  // Compute filtered results
+  const filteredWFH = filter === 'WFH' ? filterMembers(eventData.wfh) : filter === 'office' ? [] : filterMembers(eventData.wfh);
+  const filteredInOffice = filter === 'office' ? filterMembers(eventData.inOffice) : filter === 'WFH' ? [] : filterMembers(eventData.inOffice);
+
+  // Function to format the type display
+  const formatType = (type) => {
+    switch(type) {
+      case 'am': return 'AM';
+      case 'pm': return 'PM';
+      case 'fullDay': return 'Full Day';
+      default: return type;
+    }
   };
 
   return (
-    <Container fluid className="wfh-calendar" style={{ padding: '20px' }}>
+    <Container fluid className="wfh-calendar" style={{ padding: '50px' }}>
       <Row>
         {/* Left Side: Calendar with Month/Year Filters */}
-        <Col xs={12} md={6} className="mb-4" style={{ paddingRight: '15px' }}>
+        <Col xs={12} md={6} className="mb-4 p-3">
           <Row className="mb-3">
             <Col>
               <Form.Control as="select" value={month} onChange={handleMonthChange}>
@@ -112,7 +128,6 @@ const WFHCalendar = ({ events }) => {
             onNavigate={(date) => {
               setMonth(date.getMonth());
               setYear(date.getFullYear());
-
               // If navigating to today, set selected date to today
               if (moment(date).isSame(moment(), 'day')) {
                 setSelectedDate(moment()); // Set selected date to today's date
@@ -122,39 +137,87 @@ const WFHCalendar = ({ events }) => {
         </Col>
 
         {/* Right Side: Schedule Information */}
-        <Col xs={12} md={6} style={{ paddingLeft: '15px' }}>
-          <h4 className="mb-4">Schedule Details</h4>
-          <InputGroup className="mb-3">
-            <Form.Control
-              placeholder="Search team member"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </InputGroup>
-          <DropdownButton
-            variant="secondary"
-            title={filter === 'all' ? 'All' : filter === 'WFH' ? 'Work From Home' : 'In Office'}
-            onSelect={(selected) => setFilter(selected)}
-            className="mb-3"
-          >
-            <Dropdown.Item eventKey="all">All</Dropdown.Item>
-            <Dropdown.Item eventKey="WFH">Work From Home</Dropdown.Item>
-            <Dropdown.Item eventKey="office">In Office</Dropdown.Item>
-          </DropdownButton>
+        <Col xs={12} md={6} className="p-3" style={{ paddingLeft: '25px' }}>
+          <h4 className="mb-4">Schedule Details for {moment(selectedDate).format('MMMM Do YYYY')}</h4>
+
+          {/* Row to hold both search bar and dropdown */}
+          <Row className="mb-3">
+            <Col xs={12} md={8}>
+              <InputGroup>
+                <Form.Control
+                  placeholder="Search team member"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+            <Col xs={12} md={4}>
+              <DropdownButton
+                variant="secondary"
+                title={filter === 'all' ? 'All' : filter === 'WFH' ? 'Work From Home' : 'In Office'}
+                onSelect={(selected) => setFilter(selected)}
+                className="w-100"
+              >
+                <Dropdown.Item eventKey="all">All</Dropdown.Item>
+                <Dropdown.Item eventKey="WFH">Work From Home</Dropdown.Item>
+                <Dropdown.Item eventKey="office">In Office</Dropdown.Item>
+              </DropdownButton>
+            </Col>
+          </Row>
 
           {selectedDate ? (
             <div>
-              <h5>Details for {moment(selectedDate).format('MMMM Do YYYY')}</h5>
-              {filteredEvents.length > 0 ? (
-                <ul className="list-unstyled">
-                  {filteredEvents.map((event) => (
-                    <li key={event.id}>
-                      {event.teamMember} ({event.status})
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No events found for the selected day.</p>
+              <br></br>
+              {filter !== 'office' && (
+                <>
+                  <h5 >Working from Home</h5>
+                  {filteredWFH.length > 0 ? (
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>S/No.</th>
+                          <th>Name</th>
+                          <th>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredWFH.map((person, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{person.name}</td>
+                            <td>{formatType(person.type)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : <p>No results found.</p>}
+                </>
+              )}
+              <br></br>
+              {filter !== 'WFH' && (
+                <>
+                  <h5>In Office</h5>
+                  {filteredInOffice.length > 0 ? (
+                    <table className="table">
+                      <thead>
+                        <tr>
+                          <th>S/No.</th>
+                          <th>Name</th>
+                          <th>Type</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredInOffice.map((person, index) => (
+                          <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{person.name}</td>
+                            <td>{formatType(person.type)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : <p>No results found.</p>}
+                </>
               )}
             </div>
           ) : (

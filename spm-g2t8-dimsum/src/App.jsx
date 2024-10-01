@@ -7,10 +7,15 @@ import WFHCalendar from './components/Calendar';
 import YourRequests from './components/YourRequests';  // Import your other components
 
 const events = [
-  { id: 1, teamMember: 'John Doe', start: new Date(2024, 8, 20), end: new Date(2024, 8, 20), status: 'WFH' },
-  { id: 2, teamMember: 'Jane Doe', start: new Date(2024, 8, 21), end: new Date(2024, 8, 21), status: 'office' },
-  { id: 3, teamMember: 'Jack', start: new Date(2024, 8, 21), end: new Date(2024, 8, 21), status: 'WFH' },
-  { id: 4, teamMember: 'Jolene', start: new Date(2024, 8, 21), end: new Date(2024, 8, 21), status: 'WFH' },
+  { wfh:[
+    {name: 'Jack Sim', type:'am'},
+    {name: 'Carrington', type: 'fullDay'},
+    {name: 'Tony Lopez', type: 'fullDay'}
+  ], 
+    inOffice: [
+    {name: 'Jack Sim', type:'pm'},
+    {name: 'Aravind', type: 'fullDay'},
+    ]}
   // More events here
 ];
 
