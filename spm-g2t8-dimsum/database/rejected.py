@@ -12,7 +12,7 @@ db = client['Rejected']
 validation_rules = {
     "$jsonSchema": {
         "bsonType": "object",
-        "required": ["Request_ID", "Staff_ID","Request_Date", "Start_Date", "Start_AM_PM", "End_Date", "End_AM_PM", "Manager_ID", "Reason"],
+        "required": ["Request_ID", "Staff_ID","Request_Date", "Apply_Date", "Duration", "Manager_ID", "Reason"],
         "properties": {
             "Request_ID": {
                 "bsonType": "int",
@@ -26,23 +26,14 @@ validation_rules = {
                 "bsonType": "date",
                 "description": "Request_Date must be a date and is required."
             },
-            "Start_Date": {
-                "bsonType": "date",
-                "description": "Start_Date must be a date and is required."
-            },
-            "Start_AM_PM": {
+            "Apply_Date": {
                 "bsonType": "string",
-                "enum": ["AM", "PM"],
-                "description": "Start_AM_PM must be either 'AM' or 'PM' and is required."
+                "description": "Apply_Date must be a string and is required."
             },
-            "End_Date": {
-                "bsonType": "date",
-                "description": "End_Date must be a date and is required."
-            },
-            "End_AM_PM": {
+            "Duration": {
                 "bsonType": "string",
-                "enum": ["AM", "PM"],
-                "description": "End_AM_PM must be either 'AM' or 'PM' and is required."
+                "enum": ["AM", "PM", "Full Day"],
+                "description": "Duration must be either 'AM', 'PM', or 'Full Day' and is required."
             },
             "Manager_ID": {
                 "bsonType": "int",
@@ -60,24 +51,10 @@ validation_rules = {
 # Create the "Rejected" collection with schema validation
 db.create_collection("Rejected", validator=validation_rules)
 
-print("Rejected collection created with schema validation.")
+# Create a composite key index (Request_ID and Apply_Date should be unique together)
+db['Rejected'].create_index(
+    [("Request_ID", 1), ("Apply_Date", 1)], 
+    unique=True
+)
 
-# Insert a sample document into the collection using datetime objects
-rejected_data = {
-    "Request_ID": 1,
-    "Staff_ID": 1001,
-    "Request_Date": datetime.now(),  # Proper datetime object
-    "Start_Date": datetime(2024, 10, 1),
-    "Start_AM_PM": "AM",
-    "End_Date": datetime(2024, 10, 1),
-    "End_AM_PM": "PM",
-    "Manager_ID": 5001,
-    "Reason": "I need you to be in office for f2f meeting",
-}
-
-# Insert into the collection
-try:
-    db['Rejected'].insert_one(rejected_data)
-    print("Sample document inserted.")
-except Exception as e:
-    print(f"Insert error: {e}")
+print("Rejected collection created with schema validation and composite key index.")
