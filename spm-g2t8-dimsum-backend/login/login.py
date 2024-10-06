@@ -35,4 +35,4 @@ def handle_login():
         return jsonify({"status": "fail", "message": "Invalid email or password."}), 401
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

@@ -1,0 +1,8 @@
+.highlighted-row {
+  color: yellow;
+  background-color: yellow !important;
+}
+
+.highlighted-cell {
+  background-color: lightyellow !important;
+}

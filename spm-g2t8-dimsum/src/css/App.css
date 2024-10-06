@@ -21,6 +21,11 @@ h4, h5 {
   padding: 20px;
 }
 
-.highlighted-cell {
-  background-color: lightyellow !important; /* Ensure it overrides other styles */
+/* .highlighted-cell {
+  background-color: lightyellow !important; 
 }
+
+.highlighted-row {
+  color:yellow;
+  background-color: yellow !important; 
+} */
