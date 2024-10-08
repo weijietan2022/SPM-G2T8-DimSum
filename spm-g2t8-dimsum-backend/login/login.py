@@ -30,7 +30,7 @@ def handle_login():
 
     if user:
         return jsonify({"status": "success", "message": f"Hello {user['Staff_FName']}!", 
-                        "uid": user['Staff_ID'], "name": staffName}), 200
+                        "uid": user['Staff_ID'], "name": staffName, "role":user['Role']}), 200
     else:
         return jsonify({"status": "fail", "message": "Invalid email or password."}), 401
 

@@ -46,40 +46,125 @@ def get_schedule():
     userPosition = userData['Position']
     userRole = userData['Role']
 
-    teamMembers = []
-    
-    if userDepartment in ["Solutioning", "HR", "Engineering"]:
-        teamMembers = list(userCollection.find({"Position": userPosition}))  # Convert cursor to list
-        director = userCollection.find_one({"Dept": userDepartment, "Role": "Director"})
-        if director:
-            teamMembers.append(director)
-    else:
-        teamMembers = list(userCollection.find({"Dept": userDepartment}))  # Convert cursor to list
-    
-    teamMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in teamMembers}
-    
-    teamRequests = []  # Changed from `requests` to `teamRequests`
-    for member in teamMembers:
-        member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Request_Date": date}))
-        teamRequests.extend(member_requests)  # Add member's requests to the list
-
-    print(teamRequests)
-
     wfh = []
-    wfh_ids = set()  # Track the IDs of people working from home
+    wfh_ids = set()
     inOffice = []
 
-    for teamRequest in teamRequests:  # Renamed from `requests` to `teamRequests`
-        currMemberID = teamRequest['Staff_ID']
-        currMemberName = teamMembersDict[currMemberID]
-        wfh.append({ "name": currMemberName, "id": currMemberID, "type": teamRequest['Duration'], "status": teamRequest['Status'] })
-        wfh_ids.add(currMemberID)
+    if userRole == 2:
+        # teamMembers = []
+    
+        # if userDepartment in ["Solutioning", "HR", "Engineering"]:
+        #     teamMembers = list(userCollection.find({"Position": userPosition}))  # Convert cursor to list
+        #     director = userCollection.find_one({"Dept": userDepartment, "Role": "Director"})
+        #     if director:
+        #         teamMembers.append(director)
+        # else:
+        #     teamMembers = list(userCollection.find({"Dept": userDepartment}))  # Convert cursor to list
+        
+        # teamMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in teamMembers}
+        
+        # teamRequests = [] 
+        # for member in teamMembers:
+        #     member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Request_Date": date}))
+        #     teamRequests.extend(member_requests)  # Add member's requests to the list
 
-    for member in teamMembers:
-        if member['Staff_ID'] not in wfh_ids:
-            inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+        # print(teamRequests)
 
-    return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
+        # wfh = []
+        # wfh_ids = set()  # Track the IDs of people working from home
+        # inOffice = []
+
+        # for teamRequest in teamRequests:  # Renamed from `requests` to `teamRequests`
+        #     currMemberID = teamRequest['Staff_ID']
+        #     currMemberName = teamMembersDict[currMemberID]
+        #     wfh.append({ "name": currMemberName, "id": currMemberID, "type": teamRequest['Duration'], "status": teamRequest['Status'] })
+        #     wfh_ids.add(currMemberID)
+
+        # for member in teamMembers:
+        #     if member['Staff_ID'] not in wfh_ids:
+        #         inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+
+        # return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
+    
+        teamMembers = []
+    
+        if userDepartment in ["Solutioning", "HR", "Engineering"]:
+            teamMembers = list(userCollection.find({"Position": userPosition}))
+            # director = userCollection.find_one({"Dept": userDepartment, "Role": "Director"})
+            # if director:
+            #     teamMembers.append(director)
+        else:
+            teamMembers = list(userCollection.find({"Dept": userDepartment, "Position": userPosition}))  # Convert cursor to list
+        
+        teamMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in teamMembers}
+        print(teamMembers)
+        
+        teamRequests = [] 
+        for member in teamMembers:
+            member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Request_Date": date}))
+            teamRequests.extend(member_requests)  # Add member's requests to the list
+
+        print(teamRequests)
+
+        for teamRequest in teamRequests:  # Renamed from `requests` to `teamRequests`
+            currMemberID = teamRequest['Staff_ID']
+            currMemberName = teamMembersDict[currMemberID]
+            wfh.append({ "name": currMemberName, "id": currMemberID, "type": teamRequest['Duration'], "status": teamRequest['Status'] })
+            wfh_ids.add(currMemberID)
+
+        for member in teamMembers:
+            if member['Staff_ID'] not in wfh_ids:
+                inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+
+        return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
+    elif userRole == 1:
+        ## Get all members in the organization
+        allMembers = list(userCollection.find({}))
+        allMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in allMembers}
+        allMembersDeptDict = {member['Staff_ID']: member['Dept'] for member in allMembers}
+
+        ## Get all requests for the day
+        allRequests = list(requestsCollection.find({"Request_Date": date}))
+
+        print(allRequests)
+
+        for singleRequest in allRequests:
+            currMemberID = singleRequest['Staff_ID']
+            currMemberName = allMembersDict[currMemberID]
+            wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'], "department": allMembersDeptDict[currMemberID] })
+            wfh_ids.add(currMemberID)
+
+        
+        for member in allMembers:
+            if member['Staff_ID'] not in wfh_ids:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'], "department": member['Dept'] })
+
+        return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
+    elif userRole == 3:
+        ## Get all members within that department
+        allMembers = list(userCollection.find({"Dept": userDepartment}))
+        ## Remove the user with the role 'Director' from the list
+        allMembers = [member for member in allMembers if member['Position'] != 'Director']
+        allMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in allMembers}
+
+        ## Get all requests for the day
+        allRequests = list(requestsCollection.find({"Request_Date": date}))
+
+        print(allRequests)
+
+        for singleRequest in allRequests:
+            currMemberID = singleRequest['Staff_ID']
+            currMemberName = allMembersDict[currMemberID]
+            wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'] })
+            wfh_ids.add(currMemberID)
+
+        
+        for member in allMembers:
+            if member['Staff_ID'] not in wfh_ids:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+
+        return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
+    
 
 
 if __name__ == '__main__':
