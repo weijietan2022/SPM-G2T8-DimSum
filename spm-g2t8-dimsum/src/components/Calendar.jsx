@@ -131,72 +131,72 @@ const WFHCalendar = () => {
         </Col>
 
         <Col xs={12} md={6} className="p-3" style={{ paddingLeft: '25px' }}>
-          <h4 className="mb-4">Schedule Details for {moment(selectedDate).format('MMMM Do YYYY')}</h4>
+  <h4 className="mb-4">Schedule Details for {moment(selectedDate).format('MMMM Do YYYY')}</h4>
 
-          <Row className="mb-3">
-            <Col xs={12} md={12}>
-              <InputGroup>
-                <Form.Control
-                  placeholder="Search team member"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </InputGroup>
-            </Col>
-            
-          </Row>
-          <Row className="mb-3 justify-content-between">
-          <Col xs={12} md={4}>
-              <DropdownButton
-                variant="secondary"
-                title={filter === 'all' ? 'All' : filter === 'WFH' ? 'Work From Home' : 'In Office'}
-                onSelect={(selected) => setFilter(selected)}
-                className="w-100"
-              >
-                <Dropdown.Item eventKey="all">All</Dropdown.Item>
-                <Dropdown.Item eventKey="WFH">Work From Home</Dropdown.Item>
-                <Dropdown.Item eventKey="office">In Office</Dropdown.Item>
-              </DropdownButton>
-            </Col>
+  <Row className="mb-3">
+    <Col xs={12} md={12}>
+      <InputGroup>
+        <Form.Control
+          placeholder="Search team member"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </InputGroup>
+    </Col>
+  </Row>
 
-            {role === 1 && (
-              <Col xs={12} md={4}>
-                <DropdownButton
-                  variant="secondary"
-                  title={departmentFilter === 'all' ? 'All Departments' : departmentFilter}
-                  onSelect={(selected) => setDepartmentFilter(selected)}
-                  className="w-100"
-                >
-                  <Dropdown.Item eventKey="all">All Departments</Dropdown.Item>
-                  {allDepartments.map((dept, index) => (
-                    <Dropdown.Item key={index} eventKey={dept}>{dept}</Dropdown.Item>
-                  ))}
-                </DropdownButton>
-              </Col>
-            )}
+  <Row className="mb-3 justify-content-between">
+    <Col xs={12} md={4}>
+      <DropdownButton
+        variant="secondary"
+        title={filter === 'all' ? 'All' : filter === 'WFH' ? 'Work From Home' : 'In Office'}
+        onSelect={(selected) => setFilter(selected)}
+        className="w-100"
+      >
+        <Dropdown.Item eventKey="all">All</Dropdown.Item>
+        <Dropdown.Item eventKey="WFH">Work From Home</Dropdown.Item>
+        <Dropdown.Item eventKey="office">In Office</Dropdown.Item>
+      </DropdownButton>
+    </Col>
 
-          </Row>
+    {role === 1 && (
+      <Col xs={12} md={4}>
+        <DropdownButton
+          variant="secondary"
+          title={departmentFilter === 'all' ? 'All Departments' : departmentFilter}
+          onSelect={(selected) => setDepartmentFilter(selected)}
+          className="w-100"
+        >
+          <Dropdown.Item eventKey="all">All Departments</Dropdown.Item>
+          {allDepartments.map((dept, index) => (
+            <Dropdown.Item key={index} eventKey={dept}>{dept}</Dropdown.Item>
+          ))}
+        </DropdownButton>
+      </Col>
+    )}
+  </Row>
 
-          {loading ? (
-            <p>Loading...</p> // Show loading message while fetching data
-          ) : selectedDate ? (
-            <div>
-              <br />
-              {filter !== 'office' && (
-                <>
-                  <h5>Working from Home</h5>
+        {loading ? (
+          <p>Loading...</p> // Show loading message while fetching data
+        ) : selectedDate ? (
+          <div>
+            <br />
+            {filter !== 'office' && (
+              <>
+                <h5>Working from Home</h5>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}> {/* Set max height and enable scrolling */}
                   {filteredWFH.length > 0 ? (
                     <table className="table">
                       <thead>
                         <tr>
-                          <th >S/No.</th>
+                          <th>S/No.</th>
                           <th>Name</th>
                           <th>Type</th>
                           <th>Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredWFH.map((person, index) => (
+                        {filteredWFH.map((person, index) => ( // No slice, display all entries
                           <tr
                             key={index}
                             className={person.id === staffId ? 'highlighted-row' : ''} // Apply highlight class conditionally
@@ -210,12 +210,14 @@ const WFHCalendar = () => {
                       </tbody>
                     </table>
                   ) : <p>No results found.</p>}
-                </>
-              )}
-              <br />
-              {filter !== 'WFH' && (
-                <>
-                  <h5>In Office</h5>
+                </div>
+              </>
+            )}
+            <br />
+            {filter !== 'WFH' && (
+              <>
+                <h5>In Office</h5>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}> {/* Set max height and enable scrolling */}
                   {filteredInOffice.length > 0 ? (
                     <table className="table">
                       <thead>
@@ -226,8 +228,7 @@ const WFHCalendar = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredInOffice.map((person, index) => (
-                          console.log(person.id, staffId),
+                        {filteredInOffice.map((person, index) => ( // No slice, display all entries
                           <tr
                             key={index}
                             className={person.id === staffId ? 'highlighted-row' : ''} // Apply highlight class conditionally
@@ -240,14 +241,15 @@ const WFHCalendar = () => {
                       </tbody>
                     </table>
                   ) : <p>No results found.</p>}
-                </>
-              )}
-            </div>
-          ) : (
-            <p>Select a date to view schedule details.</p>
-          )}
+                </div>
+              </>
+            )}
+          </div>
+        ) : (
+          <p>Select a date to view schedule details.</p>
+        )}
+      </Col>
 
-        </Col>
       </Row>
     </Container>
   );
