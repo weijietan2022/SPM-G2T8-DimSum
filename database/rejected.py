@@ -12,7 +12,7 @@ db = client['Rejected']
 validation_rules = {
     "$jsonSchema": {
         "bsonType": "object",
-        "required": ["Request_ID", "Staff_ID","Request_Date", "Apply_Date", "Duration", "Manager_ID", "Reason"],
+        "required": ["Request_ID", "Staff_ID","Request_Date", "Apply_Date", "Duration", "Manager_ID", "Reason", "Reject_Date_Time"],
         "properties": {
             "Request_ID": {
                 "bsonType": "int",
@@ -44,6 +44,10 @@ validation_rules = {
                 "maxLength": 255,
                 "description": "Status must be a string with a max length of 255 characters and is required."
             },
+            "Reject_Date_Time": {
+                "bsonType": "date",
+                "description": "Reject_Date_Time must be a date and is required."
+            }
         }
     }
 }

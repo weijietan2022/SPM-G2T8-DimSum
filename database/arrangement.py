@@ -12,7 +12,7 @@ db = client['Arrangement']
 validation_rules = {
     "$jsonSchema": {
         "bsonType": "object",
-        "required": ["Request_ID", "Staff_ID","Request_Date", "Apply_Date", "Duration", "Manager_ID", "Status"],
+        "required": ["Request_ID", "Staff_ID","Request_Date", "Apply_Date", "Duration", "Reason", "Manager_ID", "Status", "File"],
         "properties": {
             "Request_ID": {
                 "bsonType": "int",
@@ -35,6 +35,11 @@ validation_rules = {
                 "enum": ["AM", "PM", "Full Day"],
                 "description": "Duration must be either 'AM', 'PM', or 'Full Day' and is required."
             },
+            "Reason": {
+                "bsonType": "string",
+                "maxLength": 255,
+                "description": "Status must be a string with a max length of 255 character and is required."
+            },
             "Manager_ID": {
                 "bsonType": "int",
                 "description": "Manager_ID must be an integer and is required."
@@ -44,6 +49,10 @@ validation_rules = {
                 "maxLength": 20,
                 "description": "Status must be a string with a max length of 20 characters and is required."
             },
+            "File": {
+                "bsonType": ["objectId", "null"],
+                "description": "File must be an ObjectId if a file is uploaded and is optional"
+            }
         }
     }
 }
@@ -58,21 +67,3 @@ db['Arrangement'].create_index(
 )
 
 print("Arrangement collection created with schema validation and composite key index.")
-
-# # Insert a sample document into the collection using datetime objects
-# apply_request_data = {
-#     "Request_ID": 1,
-#     "Staff_ID": 1001,
-#     "Request_Date": datetime.now(),  # Proper datetime object
-#     "Apply_Date": datetime(2024, 10, 1),
-#     "Duration": "AM",
-#     "Manager_ID": 5001,
-#     "Status": "Pending",
-# }
-
-# # Insert into the collection
-# try:
-#     db['Arrangement'].insert_one(apply_request_data)
-#     print("Sample document inserted.")
-# except Exception as e:
-#     print(f"Insert error: {e}")

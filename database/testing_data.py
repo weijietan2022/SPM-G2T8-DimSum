@@ -1,5 +1,7 @@
 from pymongo import MongoClient
 from datetime import datetime
+from bson import ObjectId
+import gridfs
 
 # Replace with your actual MongoDB Atlas connection string
 connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
@@ -13,10 +15,12 @@ apply_request_data_1 = {
     "Request_ID": 1,
     "Staff_ID": 1001,
     "Request_Date": datetime.now(),  # Proper datetime object
-    "Apply_Date": datetime(2024, 10, 1),
+    "Apply_Date": "10 October 2024",
     "Duration": "AM",
+    "Reason": "i feel like working from home",
     "Manager_ID": 5001,
     "Status": "Pending",
+    "File": None
 }
 
 # Insert into the collection
@@ -32,10 +36,12 @@ apply_request_data_2 = {
     "Request_ID": 1,
     "Staff_ID": 1001,
     "Request_Date": datetime.now(),  # Proper datetime object
-    "Apply_Date": datetime(2024, 10, 2),
+    "Apply_Date": "11 October 2024",
     "Duration": "AM",
+    "Reason": "testing data number 2",
     "Manager_ID": 5001,
     "Status": "Pending",
+    "File": ObjectId('60f7e6af1c4b3a7c9c8b4567')
 }
 
 # Insert into the collection
@@ -65,6 +71,7 @@ rejected_data = {
     "Duration": "AM",
     "Manager_ID": 5001,
     "Reason": "I need you to be in office for f2f meeting",
+    "Reject_Date,Time": datetime.now()
 }
 
 # Insert into the collection
@@ -85,7 +92,7 @@ except Exception as e:
 # Function to get the next sequence value
 def get_next_sequence_value(sequence_name):
     # Find and update the counter for the given sequence name
-    result = db['counters'].find_one_and_update(
+    result = client['counters'].find_one_and_update(
         {"_id": sequence_name},   # The document where _id = sequence_name
         {"$inc": {"sequence_value": 1}},  # Increment the sequence_value by 1
         return_document=True     # Return the updated document after the increment
