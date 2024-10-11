@@ -6,6 +6,7 @@ import Login from './components/Login';
 import WFHCalendar from './components/Calendar';
 import YourRequests from './components/YourRequests';  
 import { AuthContext } from './context/AuthContext';
+import ApplicationForm from './components/ApplicationForm';
 
 const events = [
   { wfh:[
@@ -44,6 +45,7 @@ const App = () => {
       ) : (
         <Route path="*" element={<Navigate to="/login" />} />
       )}
+      <Route path="/applicationform" element={<><Navbar/><ApplicationForm /></>} />
     </Routes>
   );
 };

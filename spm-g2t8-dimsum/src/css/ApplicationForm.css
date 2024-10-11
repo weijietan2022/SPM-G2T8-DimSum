@@ -1,0 +1,145 @@
+/* Global Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container for form */
+form {
+  background-color: #ffffff;
+  padding: 30px;
+  margin: 30px auto;
+  border-radius: 10px;
+  max-width: 700px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Title */
+h1 {
+  text-align: center;
+  color: #4CAF50;
+  margin-bottom: 25px;
+  font-size: 28px;
+}
+
+/* Label Styles */
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Input Fields */
+input[type="text"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button[type="button"] {
+  margin-top: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Cart Section */
+h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+/* Remove default list style */
+ul {
+  list-style-type: none; /* Remove default bullets */
+  padding: 0;
+  margin: 0;
+  max-height: 200px; /* Set a maximum height for the list */
+  overflow-y: auto; /* Enable vertical scrolling */
+}
+
+/* Cart items aligned and full width */
+ul li {
+  background-color: #f0f9f0;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #4CAF50;
+  border-radius: 5px;
+  width: 100%; /* Make sure the list items take full width */
+  box-sizing: border-box; /* Include padding and border in total width */
+  text-align: left; /* Align text to the left */
+}
+
+/* Alternate background for even rows */
+ul li:nth-child(even) {
+  background-color: #e8f5e8;
+}
+
+/* No dates selected */
+p {
+  color: #999;
+}
+
+
+/* File Input */
+input[type="file"] {
+  display: block;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  width: 100%;
+}
+
+/* Supporting Documents Section */
+input[type="file"] {
+  margin-top: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  form {
+    padding: 20px;
+    margin: 15px;
+  }
+
+  h1 {
+    font-size: 24px;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  textarea,
+  select {
+    font-size: 14px;
+  }
+
+  button {
+    font-size: 14px;
+  }
+}
