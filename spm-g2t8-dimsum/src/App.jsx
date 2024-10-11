@@ -7,6 +7,7 @@ import WFHCalendar from './components/Calendar';
 import YourRequests from './components/YourRequests';  
 import { AuthContext } from './context/AuthContext';
 import ApplicationForm from './components/ApplicationForm';
+import ViewApplication from './components/ViewApplication';
 
 const events = [
   { wfh:[
@@ -45,7 +46,8 @@ const App = () => {
       ) : (
         <Route path="*" element={<Navigate to="/login" />} />
       )}
-      <Route path="/applicationform" element={<><Navbar/><ApplicationForm /></>} />
+        <Route path="/applicationform" element={<><Navbar/><ApplicationForm /></>} />
+        <Route path="/view-application" element={<><Navbar /><ViewApplication /></>} />
     </Routes>
   );
 };
