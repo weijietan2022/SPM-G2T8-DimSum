@@ -26,9 +26,9 @@ def handle_login():
 
     # Query the MongoDB collection to verify the email and Staff_ID (password)
     user = collection.find_one({"Email": email, "Staff_ID": int(password)})
-    staffName = user['Staff_FName'] + " " + user['Staff_LName']
 
     if user:
+        staffName = user['Staff_FName'] + " " + user['Staff_LName']
         return jsonify({"status": "success", "message": f"Hello {user['Staff_FName']}!", 
                         "uid": user['Staff_ID'], "name": staffName, "role":user['Role']}), 200
     else:
