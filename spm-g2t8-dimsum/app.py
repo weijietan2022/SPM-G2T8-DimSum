@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 from database.counter import get_next_sequence_value
+import gridfs
 
 
 app = Flask(__name__)
@@ -15,6 +16,8 @@ client = MongoClient(connection_string)
 db = client['NewAssignment'] 
 collection = db['NewAssignment']  
 
+file_storage = client['file_storage']
+fs = gridfs.GridFS(file_storage)
 
 # Route for the login page
 @app.route('/')
@@ -48,13 +51,25 @@ def testing():
 
 
 # processing WFH request form
-@app.route('/process_request', methods=['POST'])
+@app.route('/api/process_request', methods=['POST'])
 def process():
+    data = request.json
+    cart = data['cart']
+    reason = data['reason']
+    file = data['attachments']
+    
     staff_ID = int(request.form['staffID'])
     start_date = request.form['startDate']
     start_am_pm = request.form['startAmPm']
     end_date = request.form['endDate']
     end_am_pm = request.form['endAmPm']
+    reason = request.form['reason']
+    file = request.files['file']
+
+    if file == "":
+        file = None
+    
+    file_id = fs.put(file, filename=file.filename)
 
     # - need to grab employee info that is passed over from form !!!!! - to get employee ID + manager ID
 
@@ -185,8 +200,10 @@ def process():
             "Request_Date": datetime.now(),  # Proper datetime object
             "Apply_Date": date,
             "Duration": duration,
+            "Reason": reason,
             "Manager_ID": 5001,
             "Status": "Pending",
+            "File": file_id
         }
 
         try:

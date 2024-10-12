@@ -1,72 +1,123 @@
 import React, { useState } from 'react';
 import '../css/ApplicationForm.css';
+import { useNavigate } from 'react-router-dom';
+
 
 const ApplicationForm = () => {
-  // State for form data
-  const [date, setDate] = useState('');  // Holds the currently selected date
-  const [session, setSession] = useState('Whole Day');  // Holds the session for the selected date
-  const [cart, setCart] = useState([]);  // Holds all selected dates
-  const [reason, setReason] = useState('');  // Holds the WFH reason
-  const [attachments, setAttachments] = useState(null);  // Holds the uploaded file(s)
+  const [date, setDate] = useState('');
+  const [session, setSession] = useState('AM');
+  const [cart, setCart] = useState([]);
+  const [reason, setReason] = useState('');
+  const [attachments, setAttachments] = useState(null);
+  const navigate = useNavigate();
 
-  // Handle adding a selected date to the cart
   const addDateToCart = () => {
-    if (date) {
+    if (date && session) {
       setCart([...cart, { date, session }]);
-      setDate('');  // Clear the date after adding
+      setDate('');
     }
   };
 
-  // Handle file upload
   const handleFileChange = (e) => {
     if (e.target.files) {
       setAttachments(e.target.files);
     }
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    console.log({
-      cart,
-      reason,
-      attachments,
-    });
-    alert('Form Submitted! Check the console for the form data.');
+
+    const formData = new FormData();
+    formData.append('date', JSON.stringify(cart))
+    formData.append('reason', reason);
+    formData.append('attachment', attachments)
+
+    try {
+      const response = await fetch(`http://localhost:5002/api/process_request`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // setSuccessMessage(data.message);
+        // setErrorMessage('')
+
+        setDate('');
+        setSession('AM');
+        setCart([]);
+        setReason('');
+        setAttachments(null);
+
+        console.log("success inserting into database")
+        alert("successful application")
+        navigate('/applicationform')
+
+      } else {
+        // setErrorMessage(data.message);
+        // setSuccessMessage('');
+
+        setDate('');
+        setSession('AM');
+        setCart([]);
+        setReason('');
+        setAttachments(null);
+
+        console.error(data.message)
+        if (data.message && Array.isArray(data.message)) {
+          data.message.forEach(msg => {
+            alert(msg);
+          });
+        } else {
+          console.error('Unknown error: ', data.message)
+        }
+      }
+
+    //   setRequests(data); // Set the fetched requests to state
+    //   setLoading(false);
+    } catch (error) {
+        console.error('Error fetching requests:', error);
+        // setLoading(false);
+    };
   };
+
+
+
 
   return (
     <div>
       <h1>Apply for WFH</h1>
-      <form onSubmit={handleSubmit}>
-        {/* Date Picker Section */}
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
+
         <div>
           <label>Select Date:</label>
           <input
+            id="dateInput"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
+            onClick={(e) => e.target.showPicker()}
+            style={{ cursor: 'pointer' }}
           />
         </div>
 
-        {/* AM/PM/Whole Day Section */}
         <div>
           <label>Select Session:</label>
           <select value={session} onChange={(e) => setSession(e.target.value)}>
             <option value="AM">AM</option>
             <option value="PM">PM</option>
-            <option value="Whole Day">Whole Day</option>
+            <option value="Full Day">Full Day</option>
           </select>
           <button type="button" onClick={addDateToCart}>Add to Cart</button>
         </div>
 
-        {/* Cart to show selected dates */}
         <div>
           <h2>Selected WFH Dates</h2>
-          <ul style={{ padding: 0 }}> {/* Added inline style to reset padding */}
+          <ul style={{ padding: 0 }}>
             {cart.length > 0 ? (
               cart.map((item, index) => (
-                <li key={index} style={{ textAlign: 'left' }}> {/* Ensure text is left-aligned */}
+                <li key={index} style={{ textAlign: 'left' }}>
                   {item.date} - {item.session}
                 </li>
               ))
@@ -76,7 +127,6 @@ const ApplicationForm = () => {
           </ul>
         </div>
 
-        {/* Reason for WFH */}
         <div>
           <label>Reason for WFH:</label>
           <textarea
@@ -87,13 +137,11 @@ const ApplicationForm = () => {
           />
         </div>
 
-        {/* Attachments field */}
         <div>
           <label>Supporting Documents:</label>
           <input type="file" onChange={handleFileChange} multiple />
         </div>
 
-        {/* Submit Button */}
         <button type="submit">Submit</button>
       </form>
     </div>
