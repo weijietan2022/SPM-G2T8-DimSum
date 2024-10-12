@@ -1,13 +1,11 @@
-/* Global Styles */
-body {
+/* body {
   font-family: 'Arial', sans-serif;
   background-color: #f7f7f7;
   margin: 0;
   padding: 0;
-}
+} */
 
-/* Container for form */
-form {
+/* form {
   background-color: #ffffff;
   padding: 30px;
   margin: 30px auto;
@@ -16,7 +14,6 @@ form {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Form Title */
 h1 {
   text-align: center;
   color: #4CAF50;
@@ -24,7 +21,6 @@ h1 {
   font-size: 28px;
 }
 
-/* Label Styles */
 label {
   display: block;
   margin-bottom: 8px;
@@ -32,7 +28,6 @@ label {
   color: #333;
 }
 
-/* Input Fields */
 input[type="text"],
 input[type="date"],
 textarea,
@@ -46,7 +41,6 @@ select {
   box-sizing: border-box;
 }
 
-/* Buttons */
 button {
   background-color: #4CAF50;
   color: white;
@@ -68,45 +62,41 @@ button[type="button"] {
   margin-bottom: 20px;
 }
 
-/* Cart Section */
 h2 {
   font-size: 22px;
   margin-bottom: 10px;
 }
 
-/* Remove default list style */
 ul {
-  list-style-type: none; /* Remove default bullets */
+  list-style-type: none; 
   padding: 0;
   margin: 0;
-  max-height: 200px; /* Set a maximum height for the list */
-  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 200px; 
+  overflow-y: auto; 
 }
 
-/* Cart items aligned and full width */
+
 ul li {
   background-color: #f0f9f0;
   padding: 12px;
   margin-bottom: 10px;
   border: 1px solid #4CAF50;
   border-radius: 5px;
-  width: 100%; /* Make sure the list items take full width */
-  box-sizing: border-box; /* Include padding and border in total width */
-  text-align: left; /* Align text to the left */
+  width: 100%;
+  box-sizing: border-box; 
+  text-align: left; 
 }
 
-/* Alternate background for even rows */
 ul li:nth-child(even) {
   background-color: #e8f5e8;
 }
 
-/* No dates selected */
+
 p {
   color: #999;
 }
 
 
-/* File Input */
 input[type="file"] {
   display: block;
   padding: 10px;
@@ -116,12 +106,10 @@ input[type="file"] {
   width: 100%;
 }
 
-/* Supporting Documents Section */
 input[type="file"] {
   margin-top: 5px;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   form {
     padding: 20px;
@@ -140,6 +128,135 @@ input[type="file"] {
   }
 
   button {
+    font-size: 14px;
+  }
+} */
+
+.wfh-application {
+  font-family: 'Arial', sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+
+.wfh-form {
+  background-color: #ffffff;
+  padding: 30px;
+  margin: 30px auto;
+  border-radius: 10px;
+  max-width: 700px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.wfh-heading {
+  text-align: center;
+  margin-bottom: 25px;
+  font-size: 28px;
+}
+
+.wfh-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+}
+
+.wfh-date-input,
+.wfh-reason-input,
+.wfh-session-select {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.wfh-submit-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.wfh-submit-btn:hover {
+  background-color: #45a049;
+}
+
+.wfh-add-to-cart-btn {
+  background-color: #4CAF50;
+  border:none;
+  color: white;
+  padding: 12px 20px;
+  margin-top: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.wfh-cart-heading {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.wfh-cart-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.wfh-cart-item {
+  background-color: #f0f9f0;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #4CAF50;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.wfh-cart-item:nth-child(even) {
+  background-color: #e8f5e8;
+}
+
+.wfh-no-dates {
+  color: #999;
+}
+
+.wfh-file-input {
+  display: block;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px dashed #ccc;
+  border-radius: 5px;
+  width: 100%;
+  margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+  .wfh-form {
+    padding: 20px;
+    margin: 15px;
+  }
+
+  .wfh-heading {
+    font-size: 24px;
+  }
+
+  .wfh-date-input,
+  .wfh-reason-input,
+  .wfh-session-select {
+    font-size: 14px;
+  }
+
+  .wfh-submit-btn {
     font-size: 14px;
   }
 }

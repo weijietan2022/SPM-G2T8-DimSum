@@ -96,6 +96,7 @@ def process():
 
     for item in cart_items:
         date_obj = datetime.strptime(item['date'], '%Y-%m-%d')
+        print(date_obj)
         date = date_obj.strftime('%d %B %Y')
         duration = item['session']
 
