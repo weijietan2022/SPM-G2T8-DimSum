@@ -63,14 +63,12 @@ def get_schedule():
             teamMembers = list(userCollection.find({"Dept": userDepartment, "Position": userPosition})) 
         
         teamMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in teamMembers}
-        print(teamMembers)
         
         teamRequests = [] 
         for member in teamMembers:
             member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Apply_Date": date}))
             teamRequests.extend(member_requests)  # Add member's requests to the list
 
-        print(teamRequests)
 
         for teamRequest in teamRequests:  
             currMemberID = teamRequest['Staff_ID']
@@ -92,7 +90,6 @@ def get_schedule():
         ## Get all requests for the day
         allRequests = list(requestsCollection.find({"Apply_Date": date}))
 
-        print(allRequests)
 
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']
@@ -115,8 +112,6 @@ def get_schedule():
 
         ## Get all requests for the day
         allRequests = list(requestsCollection.find({"Apply_Date": date}))
-
-        print(allRequests)
 
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']

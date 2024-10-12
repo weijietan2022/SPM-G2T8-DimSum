@@ -1,10 +1,10 @@
 import React, {useContext} from 'react';
-import { Navbar, Nav, Button, Container } from 'react-bootstrap';
+import { Navbar, Nav, Button, Container, DropdownButton, Dropdown} from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 const WFHNavbar = () => {
-  const {logout, name} = useContext(AuthContext); 
+  const {logout, name, role} = useContext(AuthContext); 
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -15,17 +15,33 @@ const WFHNavbar = () => {
   return (
     <Navbar bg="dark" variant="dark" expand="lg" className="px-3">
       <Container fluid>
-        <Navbar.Brand className="fw-bold">ALL-IN-ONE WFH PORTAL
-        </Navbar.Brand>
+        <Navbar.Brand className="fw-bold">ALL-IN-ONE WFH PORTAL</Navbar.Brand>
         <span className="text-light ms-2">Welcome, {name}!</span>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
-            <Link to="/yourrequests" className="nav-link">
-              <Button variant="dark" className="me-2">
-                Your Requests
-              </Button>
-            </Link>
+            {/* Your Requests dropdown */}
+            <DropdownButton
+              title="Requests"
+              variant="dark"
+              className="me-2 mt-2"
+              align="end"
+            >
+              <Link to="/yourrequests" className="dropdown-item">
+                View Requests
+              </Link>
+              <Dropdown.Divider />
+              <Link to="/applicationform" className="dropdown-item">
+                Submit New Request
+              </Link>
+              <Dropdown.Divider />
+              {role === 1 || role === 3 ? (
+                <Link to="/approverequests" className="dropdown-item">
+                  Approve/Reject Requests
+                </Link>
+              ) : null}
+            </DropdownButton>
+  
             <Link to="/calendar" className="nav-link">
               <Button variant="dark" className="me-2">
                 Team Schedule
@@ -39,6 +55,7 @@ const WFHNavbar = () => {
       </Container>
     </Navbar>
   );
+  
 };
 
 export default WFHNavbar;

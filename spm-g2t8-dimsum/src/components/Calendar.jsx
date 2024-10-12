@@ -1,16 +1,16 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 // import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { Form, Row, Col, Dropdown, DropdownButton, InputGroup, Container } from 'react-bootstrap';
+import { Form, Row, Col, Dropdown, DropdownButton, InputGroup, Container, Button } from 'react-bootstrap';
 import { AuthContext } from '../context/AuthContext';
 import useFetchRequests from '../hooks/useFetchRequests.js';
 import moment from 'moment-timezone';
 import '../css/calendar.css';
 
-
-
 const localizer = momentLocalizer(moment);
+
 
 const CustomToolbar = ({ date, onNavigate }) => {
   const handlePrevious = () => {
@@ -52,6 +52,14 @@ const WFHCalendar = () => {
     setSelectedDate(localDate.startOf('day')); // Set to start of the day to avoid time issues
     setFilter('all');
     console.log("Selected date:", localDate.format("YYYY-MM-DD")); // Log the selected date
+};
+
+const navigate = useNavigate();
+
+// logic for new request
+const handleNewRequest = () => {
+  // Redirect to the new request page
+  navigate('/applicationform');
 };
 
   const dayPropGetter = (date) => {
@@ -174,6 +182,13 @@ const WFHCalendar = () => {
         </DropdownButton>
       </Col>
     )}
+
+    <Col xs={12} md={4}>
+    <Button variant="secondary" className="w-100" style={{ fontSize: '15px' }} onClick={handleNewRequest}>
+      Submit New Request
+    </Button>
+    
+    </Col>
   </Row>
 
         {loading ? (
