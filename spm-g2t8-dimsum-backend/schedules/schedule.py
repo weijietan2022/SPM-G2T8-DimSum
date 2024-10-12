@@ -35,6 +35,7 @@ def get_schedule():
     date_str = data['date']
 
     date = datetime.strptime(date_str, "%Y-%m-%d")
+    date = date.strftime("%d %B %Y")
 
     print(date)
     
@@ -51,41 +52,6 @@ def get_schedule():
     inOffice = []
 
     if userRole == 2:
-        # teamMembers = []
-    
-        # if userDepartment in ["Solutioning", "HR", "Engineering"]:
-        #     teamMembers = list(userCollection.find({"Position": userPosition}))  # Convert cursor to list
-        #     director = userCollection.find_one({"Dept": userDepartment, "Role": "Director"})
-        #     if director:
-        #         teamMembers.append(director)
-        # else:
-        #     teamMembers = list(userCollection.find({"Dept": userDepartment}))  # Convert cursor to list
-        
-        # teamMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in teamMembers}
-        
-        # teamRequests = [] 
-        # for member in teamMembers:
-        #     member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Request_Date": date}))
-        #     teamRequests.extend(member_requests)  # Add member's requests to the list
-
-        # print(teamRequests)
-
-        # wfh = []
-        # wfh_ids = set()  # Track the IDs of people working from home
-        # inOffice = []
-
-        # for teamRequest in teamRequests:  # Renamed from `requests` to `teamRequests`
-        #     currMemberID = teamRequest['Staff_ID']
-        #     currMemberName = teamMembersDict[currMemberID]
-        #     wfh.append({ "name": currMemberName, "id": currMemberID, "type": teamRequest['Duration'], "status": teamRequest['Status'] })
-        #     wfh_ids.add(currMemberID)
-
-        # for member in teamMembers:
-        #     if member['Staff_ID'] not in wfh_ids:
-        #         inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
-
-        # return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
-    
         teamMembers = []
     
         if userDepartment in ["Solutioning", "HR", "Engineering"]:
@@ -94,19 +60,19 @@ def get_schedule():
             # if director:
             #     teamMembers.append(director)
         else:
-            teamMembers = list(userCollection.find({"Dept": userDepartment, "Position": userPosition}))  # Convert cursor to list
+            teamMembers = list(userCollection.find({"Dept": userDepartment, "Position": userPosition})) 
         
         teamMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in teamMembers}
         print(teamMembers)
         
         teamRequests = [] 
         for member in teamMembers:
-            member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Request_Date": date}))
+            member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Apply_Date": date}))
             teamRequests.extend(member_requests)  # Add member's requests to the list
 
         print(teamRequests)
 
-        for teamRequest in teamRequests:  # Renamed from `requests` to `teamRequests`
+        for teamRequest in teamRequests:  
             currMemberID = teamRequest['Staff_ID']
             currMemberName = teamMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": teamRequest['Duration'], "status": teamRequest['Status'] })
@@ -124,7 +90,7 @@ def get_schedule():
         allMembersDeptDict = {member['Staff_ID']: member['Dept'] for member in allMembers}
 
         ## Get all requests for the day
-        allRequests = list(requestsCollection.find({"Request_Date": date}))
+        allRequests = list(requestsCollection.find({"Apply_Date": date}))
 
         print(allRequests)
 
@@ -148,7 +114,7 @@ def get_schedule():
         allMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in allMembers}
 
         ## Get all requests for the day
-        allRequests = list(requestsCollection.find({"Request_Date": date}))
+        allRequests = list(requestsCollection.find({"Apply_Date": date}))
 
         print(allRequests)
 
