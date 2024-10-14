@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-connection_string = "mongodb+srv://wxlum2022:PbQciwo6xIcw0eqt@assignment.9wecd.mongodb.net/"
+connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.mongodb.net/"
 
 app.secret_key = 'your_secret_key'
 
@@ -49,6 +49,8 @@ def get_schedule():
 
     wfh = []
     wfh_ids = set()
+    wfh_ids_am = set()
+    wfh_ids_pm = set()
     inOffice = []
 
     if userRole == 2:
@@ -74,11 +76,21 @@ def get_schedule():
             currMemberID = teamRequest['Staff_ID']
             currMemberName = teamMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": teamRequest['Duration'], "status": teamRequest['Status'] })
-            wfh_ids.add(currMemberID)
+            # wfh_ids.add(currMemberID)
+            if teamRequest['Duration'] == "AM":
+                wfh_ids_am.add(currMemberID)
+            elif teamRequest['Duration'] == "PM":
+                wfh_ids_pm.add(currMemberID)
+            else:
+                wfh_ids.add(currMemberID)
 
         for member in teamMembers:
-            if member['Staff_ID'] not in wfh_ids:
-                inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+            if member['Staff_ID'] not in wfh_ids and member['Staff_ID'] not in wfh_ids_am and member['Staff_ID'] not in wfh_ids_pm:
+                inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'], "department": member['Dept'] })
+            elif member['Staff_ID'] in wfh_ids_am:
+                inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "PM", "id": member['Staff_ID'], "department": member['Dept'] })
+            elif member['Staff_ID'] in wfh_ids_pm:
+                inOffice.append({ "name": teamMembersDict[member['Staff_ID']], "type": "AM", "id": member['Staff_ID'], "department": member['Dept'] })
 
         return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
     elif userRole == 1:
@@ -95,12 +107,22 @@ def get_schedule():
             currMemberID = singleRequest['Staff_ID']
             currMemberName = allMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'], "department": allMembersDeptDict[currMemberID] })
-            wfh_ids.add(currMemberID)
+            # wfh_ids.add(currMemberID)
+            if singleRequest['Duration'] == "AM":
+                wfh_ids_am.add(currMemberID)
+            elif singleRequest['Duration'] == "PM":
+                wfh_ids_pm.add(currMemberID)
+            else:
+                wfh_ids.add(currMemberID)
 
         
         for member in allMembers:
-            if member['Staff_ID'] not in wfh_ids:
+            if member['Staff_ID'] not in wfh_ids and member['Staff_ID'] not in wfh_ids_am and member['Staff_ID'] not in wfh_ids_pm:
                 inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'], "department": member['Dept'] })
+            elif member['Staff_ID'] in wfh_ids_am:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "PM", "id": member['Staff_ID'], "department": member['Dept'] })
+            elif member['Staff_ID'] in wfh_ids_pm:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "AM", "id": member['Staff_ID'], "department": member['Dept'] })
 
         return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
     elif userRole == 3:
@@ -117,12 +139,24 @@ def get_schedule():
             currMemberID = singleRequest['Staff_ID']
             currMemberName = allMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'] })
-            wfh_ids.add(currMemberID)
+            # wfh_ids.add(currMemberID)
+            if singleRequest['Duration'] == "AM":
+                wfh_ids_am.add(currMemberID)
+            elif singleRequest['Duration'] == "PM":
+                wfh_ids_pm.add(currMemberID)
+            else:
+                wfh_ids.add(currMemberID)
 
         
         for member in allMembers:
-            if member['Staff_ID'] not in wfh_ids:
-                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+            # if member['Staff_ID'] not in wfh_ids:
+            #     inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
+            if member['Staff_ID'] not in wfh_ids and member['Staff_ID'] not in wfh_ids_am and member['Staff_ID'] not in wfh_ids_pm:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'], "department": member['Dept'] })
+            elif member['Staff_ID'] in wfh_ids_am:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "PM", "id": member['Staff_ID'], "department": member['Dept'] })
+            elif member['Staff_ID'] in wfh_ids_pm:
+                inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "AM", "id": member['Staff_ID'], "department": member['Dept'] })
 
         return jsonify({ "wfh": wfh, "inOffice": inOffice }), 200
     
