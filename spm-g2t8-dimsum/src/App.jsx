@@ -48,6 +48,7 @@ const App = () => {
       )}
         <Route path="/applicationform" element={<><Navbar/><ApplicationForm /></>} />
         <Route path="/view-application" element={<><Navbar /><ViewApplication /></>} />
+        <Route path="/view-request" element={<><Navbar /><YourRequests /></>} />
     </Routes>
   );
 };

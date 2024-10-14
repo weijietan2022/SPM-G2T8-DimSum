@@ -15,7 +15,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.secret_key = 'your_secret_key'
 
 # MongoDB connection
-connection_string = "mongodb+srv://wxlum2022:PbQciwo6xIcw0eqt@assignment.9wecd.mongodb.net/"
+connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.mongodb.net/"
 client = MongoClient(connection_string)
 db_arrangement = client['Arrangement'] 
 
