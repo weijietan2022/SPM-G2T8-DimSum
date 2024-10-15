@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, flash, redirect, url_for
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from datetime import datetime
@@ -35,8 +35,6 @@ def get_schedule():
     uid = data['uid']
     date_str = data['date']
 
-    ## Check if date is in the correct format
-    ## if not, return a json error
     try:
         datetime.strptime(date_str, "%Y-%m-%d")
     except ValueError:
@@ -110,12 +108,11 @@ def get_schedule():
         ## Get all requests for the day
         allRequests = list(requestsCollection.find({"Apply_Date": date}))
 
-
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']
+            print(currMemberID)
             currMemberName = allMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'], "department": allMembersDeptDict[currMemberID] })
-            # wfh_ids.add(currMemberID)
             if singleRequest['Duration'] == "AM":
                 wfh_ids_am.add(currMemberID)
             elif singleRequest['Duration'] == "PM":

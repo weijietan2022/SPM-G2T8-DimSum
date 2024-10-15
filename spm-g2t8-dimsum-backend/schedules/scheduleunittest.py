@@ -17,15 +17,6 @@ class TestGetScheduleAPI(unittest.TestCase):
         self.userCollection = self.userDb['NewAssignment']  
         self.requestsDb = self.client_db['Arrangement']
         self.requestsCollection = self.requestsDb['Arrangement']
-
-        # self.userCollection.insert_one({
-        #     "Staff_ID": "test_user",
-        #     "Staff_FName": "Test",
-        #     "Staff_LName": "User",
-        #     "Dept": "HR",
-        #     "Position": "Manager",
-        #     "Role": 2 
-        # })
     
     def tearDown(self):
         # Clean up MongoDB after tests

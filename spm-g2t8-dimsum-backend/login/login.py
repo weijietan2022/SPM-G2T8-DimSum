@@ -32,7 +32,7 @@ def handle_login():
         session['Department'] = user['Dept']        
         staffName = user['Staff_FName'] + " " + user['Staff_LName']
         return jsonify({"status": "success", "message": f"Hello {user['Staff_FName']}!", 
-                        "uid": user['Staff_ID'], "name": staffName, "role":user['Role']}), 200
+                        "uid": user['Staff_ID'], "name": staffName, "role":user['Role'], "mid":user['Reporting_Manager'], "dept":user['Dept']}), 200
     else:
         return jsonify({"status": "fail", "message": "Invalid email or password."}), 401
 
