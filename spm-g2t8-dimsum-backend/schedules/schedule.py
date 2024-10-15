@@ -22,6 +22,7 @@ requestsCollection = requestsDb['Arrangement']
 
 @app.route('/api/getSchedule', methods=['POST'])
 def get_schedule():
+    print("Request received")
     if not request.is_json:
         print("Request must be in JSON format")
         return jsonify({"error": "Request must be in JSON format"}), 400
@@ -29,10 +30,17 @@ def get_schedule():
     data = request.json
     if not data or 'uid' not in data or 'date' not in data:
         print("Missing 'uid' or 'date' in request body")
-        return jsonify({"error": "Missing 'uid' or 'date' in request body"}), 400
+        return jsonify({"error": "Missing 'uid' or 'date' in request body"}), 404
     
     uid = data['uid']
     date_str = data['date']
+
+    ## Check if date is in the correct format
+    ## if not, return a json error
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({"error": "Invalid date format"}), 400
 
     date = datetime.strptime(date_str, "%Y-%m-%d")
     date = date.strftime("%d %B %Y")
