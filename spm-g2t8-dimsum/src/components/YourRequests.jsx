@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import '../css/YourRequests.css';
 
 const YourRequests = () => {
   const [requests, setRequests] = useState([]);  // To store the fetched requests
   const [loading, setLoading] = useState(true);  // To manage loading state
   const [error, setError] = useState(null);      // To handle any errors
+  const [statusFilter, setStatusFilter] = useState('All');  // Default to 'All'
 
+  // useEffect with dependency array only runs when 'statusFilter' changes
   useEffect(() => {
-    // Fetch requests from the Flask API
-    fetch('http://localhost:5008/api/view-request', {
+    // Clear previous errors
+    setError(null);
+
+    // Fetch requests from the Flask API based on the selected status filter
+    fetch(`http://localhost:5008/api/view-request?status=${statusFilter}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      // credentials: 'include'  // Ensures cookies are sent with the request
     })
-    
       .then(response => {
         if (!response.ok) {
           throw new Error('Failed to fetch requests');  // Handle fetch errors
@@ -29,7 +33,7 @@ const YourRequests = () => {
         setError(err.message);  // Set error message if fetch fails
         setLoading(false);      // Stop loading
       });
-  }, []);  // Empty dependency array means this will only run once, after component mounts
+  }, [statusFilter]);  // Trigger fetch only when 'statusFilter' changes
 
   // Show loading state
   if (loading) return <p>Loading requests...</p>;
@@ -40,9 +44,21 @@ const YourRequests = () => {
   // Render the requests in a table once they are fetched
   return (
     <div>
-      <h1>Your Requests</h1>
+      <br></br>
+      {/* Dropdown for status filter */}
+      <select
+          id="statusFilter"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}  // Update status filter when changed
+        >
+          <option value="All">All</option>
+          <option value="Pending">Pending</option>
+          <option value="Approved">Approved</option>
+          <option value="Rejected">Rejected</option>
+        </select>
+      <br></br>
       {requests.length > 0 ? (
-        <table>
+        <center><table className="tab-con">
           <thead>
             <tr>
               <th>Request ID</th>
@@ -69,7 +85,7 @@ const YourRequests = () => {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></center>
       ) : (
         <p>No requests found</p>
       )}

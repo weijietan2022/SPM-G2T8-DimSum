@@ -23,6 +23,7 @@ apply_request_data_1 = {
     "Manager_ID": 21001,
     "Status": "Pending",
     "File": None
+    
 }
 
 # Insert into the collection
@@ -63,6 +64,7 @@ apply_request_data_3 = {
     "Manager_ID": 21001,
     "Status": "Pending",
     "File": None
+
 }
 
 # Insert into the collection

@@ -37,38 +37,53 @@ def serialize_data(data):
 @app.route('/api/view-request', methods=['GET'])
 def getRequest():
     # Hardcoded values for now (simulating session data)
-    id = 151408
-    Position = 'Director'
-    Dept = 'Engineering'
+    id = 130002
+    Position = 'MD'
+    Dept = 'CEO'
     
+    stat = request.args.get('status', 'Pending')
+
     # Fetch the requests based on position
-    requests = ViewRequest(id, Position, Dept)
+    requests = ViewRequest(id, Position, Dept,stat)
+    print(f"Returning requests for status {stat}: {requests}")
+
 
     # Serialize the requests and return them as a JSON response
     return jsonify([serialize_data(req) for req in requests])
+def ViewRequest(id, Position, Dept, status):
+    query = {}
 
-def ViewRequest(id, Position, Dept):
+    # Only apply status filter if status is not 'All'
+    if status != 'All':
+        query["Status"] = status
+
     if Position == 'MD':
-        # Query MongoDB for pending requests
-        requests = collection.find({"Status": "Pending"})
+        # MD can see all requests filtered by status
+        requests = collection.find(query)
+
     elif Position == 'Director':
+        # Director sees all requests in their department filtered by status
         deptStaff = list(collection.find({"Department": Dept}, {"Staff_ID": 1}))
         Dept_ids = [staff["Staff_ID"] for staff in deptStaff]
-        requests = collection.find({
-            "Staff_ID": {"$in": Dept_ids}, 
-            "Status": "Pending"
-        })
-    elif "Manager" in Position:
-        direct_reports = list(collection.find({"Manager_ID": id, "Department": Dept}, {"Staff_ID": 1}))
-        ids = [report["Staff_ID"] for report in direct_reports]
-        requests = collection.find({
-            "Staff_ID": {"$in": ids}, 
-            "Department": Dept, 
-            "Status": "Pending"
-        })
+        query["Staff_ID"] = {"$in": Dept_ids}
+        requests = collection.find(query)
 
-    # Return the MongoDB cursor as a list for easy iteration
+    elif "Manager" in Position:
+        # Manager sees requests from their direct reports
+        direct_reports = list(collection.find({"Manager_ID": id, "Department": Dept}, {"Staff_ID": 1}))
+
+        if direct_reports:
+            ids = [report["Staff_ID"] for report in direct_reports]
+            query["Staff_ID"] = {"$in": ids}
+
+            # Perform query with or without Status filter
+            requests = collection.find(query)
+        else:
+            print("No report found")
+            requests = []
+
     return list(requests)
+
 
 @app.route('/api/requests', methods=['GET'])
 def get_requests():
