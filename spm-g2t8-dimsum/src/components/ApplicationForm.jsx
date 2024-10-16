@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import '../css/ApplicationForm.css';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 
 const ApplicationForm = () => {
+  const { staffId, managerId } = useContext(AuthContext);
   const [date, setDate] = useState('');
   const [session, setSession] = useState('AM');
   const [cart, setCart] = useState([]);
   const [reason, setReason] = useState('');
-  const [attachments, setAttachments] = useState(null);
+  const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
 
   const addDateToCart = () => {
@@ -18,9 +20,15 @@ const ApplicationForm = () => {
     }
   };
 
+  const handleDelete = (index) => {
+    const newCart = cart.filter((item, i) => i !== index);
+    setCart(newCart);
+  };
+
   const handleFileChange = (e) => {
-    if (e.target.files) {
-      setAttachments(e.target.files);
+    if (e.target.files && e.target.files.length > 0) {
+      setAttachment(e.target.files[0]);
+      console.log("Selected file:", e.target.files[0]);
     }
   };
 
@@ -30,7 +38,9 @@ const ApplicationForm = () => {
     const formData = new FormData();
     formData.append('date', JSON.stringify(cart))
     formData.append('reason', reason);
-    formData.append('attachment', attachments)
+    formData.append('attachment', attachment)
+    formData.append('staffId', staffId)
+    formData.append("managerId", managerId)
 
     try {
       const response = await fetch(`http://localhost:5002/api/process_request`, {
@@ -41,111 +51,42 @@ const ApplicationForm = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // setSuccessMessage(data.message);
-        // setErrorMessage('')
-
         setDate('');
         setSession('AM');
         setCart([]);
         setReason('');
-        setAttachments(null);
+        setAttachment('');
+        document.querySelector('.wfh-file-input').value = ''
 
         console.log("success inserting into database")
         alert("successful application")
         navigate('/applicationform')
 
       } else {
-        // setErrorMessage(data.message);
-        // setSuccessMessage('');
-
         setDate('');
         setSession('AM');
         setCart([]);
         setReason('');
-        setAttachments(null);
+        setAttachment('');
+        document.querySelector('.wfh-file-input').value = ''
 
         console.error(data.message)
-        if (data.message && Array.isArray(data.message)) {
-          data.message.forEach(msg => {
-            alert(msg);
-          });
+        if (Array.isArray(data.message)) {
+          data.message.forEach((msg => alert(msg)))
+        } else if (data.message) {
+          alert(data.message);
         } else {
-          console.error('Unknown error: ', data.message)
+          alert("An unknown error occurred.");
         }
       }
 
-    //   setRequests(data); // Set the fetched requests to state
-    //   setLoading(false);
     } catch (error) {
         console.error('Error fetching requests:', error);
-        // setLoading(false);
     };
   };
 
 
-
-
   return (
-    // <div>
-    //   <h1>Apply for WFH</h1>
-    //   <form onSubmit={handleSubmit} encType="multipart/form-data">
-
-    //     <div>
-    //       <label>Select Date:</label>
-    //       <input
-    //         id="dateInput"
-    //         type="date"
-    //         value={date}
-    //         onChange={(e) => setDate(e.target.value)}
-    //         onClick={(e) => e.target.showPicker()}
-    //         style={{ cursor: 'pointer' }}
-    //       />
-    //     </div>
-
-    //     <div>
-    //       <label>Select Session:</label>
-    //       <select value={session} onChange={(e) => setSession(e.target.value)}>
-    //         <option value="AM">AM</option>
-    //         <option value="PM">PM</option>
-    //         <option value="Full Day">Full Day</option>
-    //       </select>
-    //       <button type="button" onClick={addDateToCart}>Add to Cart</button>
-    //     </div>
-
-    //     <div>
-    //       <h2>Selected WFH Dates</h2>
-    //       <ul style={{ padding: 0 }}>
-    //         {cart.length > 0 ? (
-    //           cart.map((item, index) => (
-    //             <li key={index} style={{ textAlign: 'left' }}>
-    //               {item.date} - {item.session}
-    //             </li>
-    //           ))
-    //         ) : (
-    //           <p>No dates selected yet</p>
-    //         )}
-    //       </ul>
-    //     </div>
-
-    //     <div>
-    //       <label>Reason for WFH:</label>
-    //       <textarea
-    //         value={reason}
-    //         onChange={(e) => setReason(e.target.value)}
-    //         placeholder="Provide a reason for applying WFH"
-    //         required
-    //       />
-    //     </div>
-
-    //     <div>
-    //       <label>Supporting Documents:</label>
-    //       <input type="file" onChange={handleFileChange} multiple />
-    //     </div>
-
-    //     <button type="submit">Submit</button>
-    //   </form>
-    // </div>
-
     <div className="wfh-application">
     <h1 className="wfh-heading">Apply for WFH</h1>
     <form onSubmit={handleSubmit} encType="multipart/form-data" className="wfh-form">
@@ -179,7 +120,16 @@ const ApplicationForm = () => {
           {cart.length > 0 ? (
             cart.map((item, index) => (
               <li key={index} className="wfh-cart-item">
-                {item.date} - {item.session}
+                <span className="wfh-cart-item-text">
+                  {item.date} - {item.session}
+                </span>
+                <button
+                  type="button"
+                  className="wfh-delete-btn"
+                  onClick={() => handleDelete(index)}
+                >
+                  Delete
+                </button>
               </li>
             ))
           ) : (
@@ -201,7 +151,7 @@ const ApplicationForm = () => {
 
       <div className="wfh-documents">
         <label className="wfh-label">Supporting Documents:</label>
-        <input type="file" onChange={handleFileChange} multiple className="wfh-file-input" />
+        <input type="file" onChange={handleFileChange} className="wfh-file-input" />
       </div>
 
       <button type="submit" className="wfh-submit-btn">Submit</button>

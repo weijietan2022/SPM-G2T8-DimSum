@@ -15,7 +15,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.secret_key = 'your_secret_key'
 
 # MongoDB connection
-connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.mongodb.net/"
+connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
 client = MongoClient(connection_string)
 db_arrangement = client['Arrangement'] 
 
@@ -77,17 +77,26 @@ def process():
     cart = request.form.get('date')
     reason = request.form.get('reason')
     file = request.files.get('attachment')
+    staff_ID = int(request.form.get('staffId'))
+    manager_ID = int(request.form.get('managerId'))
+
+    print("This is the file")
+    print(file)
 
     if not cart or not reason:
         return jsonify({"status": "fail", "message": "Missing required fields."}), 400
+    
+    try:
+        cart_items = json.loads(cart)
+        if not cart_items:
+            return jsonify({"status": "fail", "message": "No dates provided in the cart."}), 400
+    except json.JSONDecodeError:
+        return jsonify({"status": "fail", "message": "Invalid cart format."}), 400
 
     # Process the uploaded file if it exists
     file_id = None
     if file:
         file_id = fs.put(file, filename=file.filename)
-
-    # - need to grab employee info that is passed over from form !!!!! - to get employee ID + manager ID
-    staff_ID = 20
 
     clashing_records = []
 
@@ -152,7 +161,7 @@ def process():
             "Apply_Date": date,
             "Duration": duration,
             "Reason": reason,
-            "Manager_ID": 5001,
+            "Manager_ID": manager_ID,
             "Status": "Pending",
             "File": file_id
         }
