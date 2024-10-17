@@ -44,11 +44,11 @@ const App = () => {
           <Route path="/calendar" element={<><Navbar  /><WFHCalendar events={events}/></>} />
           <Route path="/applicationform" element={<><Navbar/><ApplicationForm /></>} />
           <Route path="/view-application" element={<><Navbar /><ViewApplication /></>} />
+          <Route path="/view-request" element={<><Navbar /><YourRequests /></>} />
         </>
       ) : (
         <Route path="*" element={<Navigate to="/login" />} />
       )}
-        <Route path="/view-request" element={<><Navbar /><YourRequests /></>} />
     </Routes>
   );
 };

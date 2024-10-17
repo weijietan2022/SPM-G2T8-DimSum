@@ -17,9 +17,7 @@ app.secret_key = 'your_secret_key'
 connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
 client = MongoClient(connection_string)
 db_arrangement = client['Arrangement'] 
-
-# Define your collection
-collection = db_arrangement['Arrangement']  # Replace with your actual collection name
+collection = db_arrangement['Arrangement']
 
 file_storage = client['file_storage']
 fs = gridfs.GridFS(file_storage)
@@ -46,6 +44,7 @@ def serialize_data(data):
         return [serialize_data(item) for item in data]
     return data
 
+
 @app.route('/api/requests', methods=['GET'])
 def get_requests():
     try:
@@ -60,7 +59,7 @@ def get_requests():
 
         print(f"Query: {query}")
 
-        results = list(collection.find(query))
+        results = list(collection.find(query).sort("Request_Date", -1))
 
         serialized_results = []
         for result in results:
@@ -182,7 +181,6 @@ def process():
         return jsonify({"success": False, "message": clash_messages}), 400
         
 
-    # Get unique request_ID for this request
     request_id = get_next_sequence_value("request_id")
 
     for item in cart_items:
@@ -193,7 +191,7 @@ def process():
         request_data = {
             "Request_ID": request_id,
             "Staff_ID": staff_ID,
-            "Request_Date": datetime.now(),  # Proper datetime object
+            "Request_Date": datetime.now(),
             "Apply_Date": date,
             "Duration": duration,
             "Reason": reason,

@@ -13,6 +13,12 @@ const ApplicationForm = () => {
   const [attachment, setAttachment] = useState(null);
   const navigate = useNavigate();
 
+  const minDate = () => {
+    const today = new Date();
+    today.setDate(today.getDate() + 1);
+    return today.toISOString().split('T')[0];
+  };
+
   const addDateToCart = () => {
     if (date && session) {
       setCart([...cart, { date, session }]);
@@ -71,13 +77,17 @@ const ApplicationForm = () => {
         document.querySelector('.wfh-file-input').value = ''
 
         console.error(data.message)
+
+        let errorMsg = "Errors:\n";
         if (Array.isArray(data.message)) {
-          data.message.forEach((msg => alert(msg)))
+          data.message.forEach(msg => { errorMsg += msg + "\n" })
         } else if (data.message) {
-          alert(data.message);
+          errorMsg += data.message;
         } else {
-          alert("An unknown error occurred.");
+          errorMsg += "An unknown error occurred.";
         }
+
+        alert(errorMsg.trim());
       }
 
     } catch (error) {
@@ -97,6 +107,7 @@ const ApplicationForm = () => {
           id="dateInput"
           type="date"
           value={date}
+          min={minDate()}
           onChange={(e) => setDate(e.target.value)}
           onClick={(e) => e.target.showPicker()}
           style={{ cursor: 'pointer' }}
