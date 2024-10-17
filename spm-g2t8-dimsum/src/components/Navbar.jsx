@@ -27,7 +27,7 @@ const WFHNavbar = () => {
               className="me-2 mt-2"
               align="end"
             >
-              <Link to="/yourrequests" className="dropdown-item">
+              <Link to="/view-application" className="dropdown-item">
                 View Requests
               </Link>
               <Dropdown.Divider />
@@ -36,7 +36,7 @@ const WFHNavbar = () => {
               </Link>
               <Dropdown.Divider />
               {role === 1 || role === 3 ? (
-                <Link to="/approverequests" className="dropdown-item">
+                <Link to="/yourrequests" className="dropdown-item">
                   Approve/Reject Requests
                 </Link>
               ) : null}

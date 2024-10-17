@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Table, Dropdown, DropdownButton, Form, InputGroup, Col, Row, Container } from 'react-bootstrap';
 import axios from 'axios';
 import moment from 'moment-timezone';
 import '../css/viewApplication.css';
+import { AuthContext } from '../context/AuthContext';
 
 const ViewApplication = () => {
   const [requests, setRequests] = useState([]);
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const staffID = 10; // Mock Staff ID for filtering
+  const { staffId } = useContext(AuthContext);
 
   // Fetch data from the API
   const fetchRequests = async () => {
@@ -17,7 +18,7 @@ const ViewApplication = () => {
       setLoading(true);
       
       // Construct the URL with query parameters
-      const response = await fetch(`http://localhost:5002/api/requests?status=${filter === 'all' ? '' : filter}&staff_id=${staffID}`, {
+      const response = await fetch(`http://localhost:5002/api/requests?status=${filter === 'all' ? '' : filter}&staff_id=${staffId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ const ViewApplication = () => {
     let filtered = requests;
 
     // Filter by Staff ID and Status
-    filtered = filtered.filter(request => request.Staff_ID === staffID);
+    filtered = filtered.filter(request => request.Staff_ID === staffId);
     
     if (filter !== 'all') {
       filtered = filtered.filter(request => request.Status === filter);
@@ -55,7 +56,7 @@ const ViewApplication = () => {
   // Fetch data on component mount
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [filter]);
 
   return (
     <Container fluid className="view-application" style={{ padding: '50px' }}>
@@ -88,6 +89,7 @@ const ViewApplication = () => {
               <th>Duration</th>
               <th>Reason</th>
               <th>Status</th>
+              <th>File</th>
             </tr>
           </thead>
           <tbody>
@@ -110,6 +112,15 @@ const ViewApplication = () => {
                     >
                       {request.Status}
                     </span>
+                  </td>
+                  <td>
+                  {request.File ? (
+                      <a href={`http://localhost:5002/api/files/${request.File}`} download>
+                        Download File
+                      </a>
+                    ) : (
+                      '-'
+                    )}
                   </td>
                 </tr>
               ))

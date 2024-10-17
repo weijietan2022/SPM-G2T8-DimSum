@@ -1,9 +1,8 @@
-from flask import Flask, jsonify, request, redirect, url_for, flash, render_template
+from flask import Flask, jsonify, request, flash, send_file
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime, timedelta
-# from database.counter import get_next_sequence_value
+from datetime import datetime
 import gridfs
 import json
 
@@ -27,13 +26,12 @@ fs = gridfs.GridFS(file_storage)
 
 
 def get_next_sequence_value(sequence_name):
-    # Find and update the counter for the given sequence name
     result = db_arrangement['counters'].find_one_and_update(
-        {"_id": sequence_name},   # The document where _id = sequence_name
-        {"$inc": {"sequence_value": 1}},  # Increment the sequence_value by 1
-        return_document=True     # Return the updated document after the increment
+        {"_id": sequence_name},
+        {"$inc": {"sequence_value": 1}},
+        return_document=True
     )
-    return result['sequence_value']  # Return the incremented sequence_value
+    return result['sequence_value']
 
 
 def serialize_data(data):
@@ -41,7 +39,7 @@ def serialize_data(data):
     if isinstance(data, ObjectId):
         return str(data)
     if isinstance(data, datetime):
-        return data.isoformat()  # Convert datetime to ISO format string
+        return data.isoformat()
     if isinstance(data, dict):
         return {k: serialize_data(v) for k, v in data.items()}
     if isinstance(data, list):
@@ -50,21 +48,59 @@ def serialize_data(data):
 
 @app.route('/api/requests', methods=['GET'])
 def get_requests():
-    # Retrieve the status filter from query parameters if provided
-    status = request.args.get('status', None)
+    try:
+        status = request.args.get('status', None)
+        staff_id = request.args.get('staff_id', None)
+
+        query = {}
+        if status:
+            query['Status'] = status
+        if staff_id:
+            query['Staff_ID'] = int(staff_id)
+
+        print(f"Query: {query}")
+
+        results = list(collection.find(query))
+
+        serialized_results = []
+        for result in results:
+            serialized_result = serialize_data(result)
+            
+            if result['File'] != None:
+                serialized_result['File'] = str(result['File'])
+            
+            serialized_results.append(serialized_result)
+        print(serialized_results)
+
+        return jsonify(serialized_results), 200
+    except Exception as e:
+        print(f"Error fetching requests: {str(e)}")
+        return jsonify({"error": "Failed to fetch requests", "details": str(e)}), 500
+
+
+##################################################################################
+##################################################################################
+
+
+@app.route('/api/files/<file_id>', methods=['GET'])
+def download_file(file_id):
+    try:
+        print(f"Received file ID: {file_id}")
+        
+        if not ObjectId.is_valid(file_id):
+            return jsonify({"error": "Invalid file ID"}), 400
+        
+        file = fs.get(ObjectId(file_id))
+        
+        return send_file(file, download_name=file.filename, as_attachment=True)
     
-    # Build query depending on whether status filter is provided
-    query = {}
-    if status:
-        query['Status'] = status
+    except gridfs.errors.NoFile:
+        print(f"No file found with ID: {file_id}")
+        return jsonify({"error": "File not found"}), 404
     
-    # Fetch data from MongoDB
-    results = list(collection.find(query))
-    
-    # Convert results to JSON-serializable format
-    serialized_results = [serialize_data(result) for result in results]
-    
-    return jsonify(serialized_results)
+    except Exception as e:
+        print(f"Error downloading file: {str(e)}")
+        return jsonify({"error": "An error occurred", "details": str(e)}), 500
 
 
 ##################################################################################
