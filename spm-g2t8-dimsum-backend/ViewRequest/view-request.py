@@ -3,7 +3,7 @@ from flask_cors import CORS
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
-# from database.counter import get_next_sequence_value
+
 import gridfs
 import json
 
@@ -19,15 +19,15 @@ client = MongoClient(connection_string)
 db_arrangement = client['Arrangement'] 
 
 # Define your collection
-collection = db_arrangement['Arrangement']  # Replace with your actual collection name
+collection = db_arrangement['Arrangement']  
 
 
 def serialize_data(data):
     """ Convert MongoDB BSON types to JSON serializable types. """
     if isinstance(data, ObjectId):
-        return str(data)  # Convert ObjectId to string
+        return str(data)  
     if isinstance(data, datetime):
-        return data.isoformat()  # Convert datetime to ISO format string
+        return data.isoformat()  
     if isinstance(data, dict):
         return {k: serialize_data(v) for k, v in data.items()}
     if isinstance(data, list):
@@ -36,10 +36,7 @@ def serialize_data(data):
 
 @app.route('/api/view-request', methods=['GET'])
 def getRequest():
-    # Hardcoded values for now (simulating session data)
-    # id = 140894
-    # Position = 'Sales Manager'
-    # Dept = 'Sales'
+
 
     Dept = request.args.get('dept')
     id = request.args.get('staffId')
@@ -50,7 +47,6 @@ def getRequest():
     
     stat = request.args.get('status', 'Pending')
 
-    # Fetch the requests based on position
     requests = ViewRequest(id, Position, Dept,stat)
     print(f"Returning requests for status {stat}: {requests}")
 
@@ -60,12 +56,10 @@ def getRequest():
 def ViewRequest(id, Position, Dept, status):
     query = {}
 
-    # Only apply status filter if status is not 'All'
     if status != 'All':
         query["Status"] = status
 
     if Position == 'MD':
-        # MD can see all requests filtered by status
         requests = collection.find(query)
 
     # elif Position == 'Director':
@@ -76,9 +70,9 @@ def ViewRequest(id, Position, Dept, status):
     #     requests = collection.find(query)
 
     elif "Manager" in Position or Position == "Director":
-        direct_reports = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
-        if direct_reports:
-            ids = [report["Staff_ID"] for report in direct_reports]
+        listofids = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
+        if listofids:
+            ids = [report["Staff_ID"] for report in listofids]
             query["Staff_ID"] = {"$in": ids}
 
             requests = collection.find(query)
@@ -91,18 +85,14 @@ def ViewRequest(id, Position, Dept, status):
 
 @app.route('/api/requests', methods=['GET'])
 def get_requests():
-    # Retrieve the status filter from query parameters if provided
     status = request.args.get('status', None)
     
-    # Build query depending on whether status filter is provided
     query = {}
     if status:
         query['Status'] = status
     
-    # Fetch data from MongoDB
     results = list(collection.find(query))
     
-    # Convert results to JSON-serializable format
     serialized_results = [serialize_data(result) for result in results]
     
     return jsonify(serialized_results)
