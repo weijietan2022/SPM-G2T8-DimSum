@@ -10,6 +10,8 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState('');
   const [managerId, setManagerId] = useState('');
   const [dept, setDept] = useState('');
+  const [position, setPosition] = useState('');
+
 
   // Retrieve auth state from localStorage on initial load
   useEffect(() => {
@@ -19,6 +21,8 @@ export const AuthProvider = ({ children }) => {
     const storedRole = localStorage.getItem('role');
     const storedManagerId = localStorage.getItem('storedManagerId');
     const storedDept = localStorage.getItem('dept');
+    const storedPosition = localStorage.getItem('position');
+
 
     if (storedAuthState === 'true') {
       setIsAuthenticated(true);
@@ -27,16 +31,18 @@ export const AuthProvider = ({ children }) => {
       setRole(storedRole);
       setManagerId(storedManagerId);
       setDept(storedDept);
+      setPosition(storedPosition);
     }
   }, []);
 
-  const login = (uid, name, role, managerId, dept) => {
+  const login = (uid, name, role, managerId, dept,position) => {
     setIsAuthenticated(true);
     setStaffId(uid);
     setName(name);
     setRole(role);
     setManagerId(managerId);
     setDept(dept);
+    setPosition(position);
 
 
     // Store the correct userData in localStorage
@@ -46,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem('role', role); 
     localStorage.setItem('managerId', managerId);
     localStorage.setItem('dept', dept);
+    localStorage.setItem('position', position);
   };
 
   const logout = () => {
@@ -55,16 +62,18 @@ export const AuthProvider = ({ children }) => {
     setRole('');
     setManagerId('');
     setDept('');
+    setPosition('')
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('staffId');
     localStorage.removeItem('name');
     localStorage.removeItem('role');
     localStorage.removeItem('managerId');
     localStorage.removeItem('dept');
+    localStorage.removeItem('position');
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, name, staffId, role, managerId, dept }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, name, staffId, role, managerId, dept, position }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import '../css/YourRequests.css';
+import { AuthContext } from '../context/AuthContext';
+
 
 const YourRequests = () => {
+  const { staffId, dept, position } = useContext(AuthContext);
   const [requests, setRequests] = useState([]);  // To store the fetched requests
   const [loading, setLoading] = useState(true);  // To manage loading state
   const [error, setError] = useState(null);      // To handle any errors
@@ -13,7 +16,7 @@ const YourRequests = () => {
     setError(null);
 
     // Fetch requests from the Flask API based on the selected status filter
-    fetch(`http://localhost:5008/api/view-request?status=${statusFilter}`, {
+    fetch(`http://localhost:5008/api/view-request?status=${statusFilter}&dept=${dept}&staffId=${staffId}&position=${position}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

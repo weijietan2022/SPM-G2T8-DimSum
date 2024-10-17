@@ -16,7 +16,7 @@ app.secret_key = 'your_secret_key'
 # MongoDB connection
 connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
 client = MongoClient(connection_string)
-db_arrangement = client['NewArrangement'] 
+db_arrangement = client['Arrangement'] 
 
 # Define your collection
 collection = db_arrangement['Arrangement']  # Replace with your actual collection name
@@ -37,9 +37,16 @@ def serialize_data(data):
 @app.route('/api/view-request', methods=['GET'])
 def getRequest():
     # Hardcoded values for now (simulating session data)
-    id = 130002
-    Position = 'MD'
-    Dept = 'CEO'
+    # id = 140894
+    # Position = 'Sales Manager'
+    # Dept = 'Sales'
+
+    Dept = request.args.get('dept')
+    id = request.args.get('staffId')
+    id = int(id)
+    Position = request.args.get('position')
+    
+  
     
     stat = request.args.get('status', 'Pending')
 
@@ -61,22 +68,19 @@ def ViewRequest(id, Position, Dept, status):
         # MD can see all requests filtered by status
         requests = collection.find(query)
 
-    elif Position == 'Director':
-        # Director sees all requests in their department filtered by status
-        deptStaff = list(collection.find({"Department": Dept}, {"Staff_ID": 1}))
-        Dept_ids = [staff["Staff_ID"] for staff in deptStaff]
-        query["Staff_ID"] = {"$in": Dept_ids}
-        requests = collection.find(query)
+    # elif Position == 'Director':
+    #     # Director sees all requests in their department filtered by status
+    #     deptStaff = list(collection.find({"Department": Dept}, {"Staff_ID": 1}))
+    #     Dept_ids = [staff["Staff_ID"] for staff in deptStaff]
+    #     query["Staff_ID"] = {"$in": Dept_ids}
+    #     requests = collection.find(query)
 
-    elif "Manager" in Position:
-        # Manager sees requests from their direct reports
-        direct_reports = list(collection.find({"Manager_ID": id, "Department": Dept}, {"Staff_ID": 1}))
-
+    elif "Manager" in Position or Position == "Director":
+        direct_reports = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
         if direct_reports:
             ids = [report["Staff_ID"] for report in direct_reports]
             query["Staff_ID"] = {"$in": ids}
 
-            # Perform query with or without Status filter
             requests = collection.find(query)
         else:
             print("No report found")

@@ -31,11 +31,11 @@ const Login = () => {
       if (response.ok) {
         setSuccessMessage(data.message);  // Set success message from Flask
         setErrorMessage('');  // Clear error message
-        const { uid, name, role, mid, dept } = data;
+        const { uid, name, role, mid, dept, position } = data;
 
         // console.log(uid, name, mid, role);
 
-        login(uid, name, role, mid, dept);  // Call the login function from context
+        login(uid, name, role, mid, dept, position);  // Call the login function from context
         navigate('/calendar');  // Redirect to the calendar page
       } else {
         setErrorMessage(data.message);  // Set error message from Flask
