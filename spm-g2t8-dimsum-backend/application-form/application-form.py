@@ -9,7 +9,7 @@ import json
 
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*"}}, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
 app.secret_key = 'your_secret_key'
 
@@ -211,6 +211,30 @@ def process():
 
 
     return jsonify({"status": "success", "message": "request inserted"}), 200
+
+
+@app.route('/api/withdraw/<request_id>/<apply_date>', methods=['PUT'])
+def withdraw_request(request_id, apply_date):
+    try:
+        result = collection.update_one(
+            {
+                "Request_ID": int(request_id),
+                "Apply_Date": apply_date
+            },
+            {
+                "$set": {
+                    "Status": "Withdrawn"
+                }
+            }
+        )
+        
+        if result.modified_count > 0:
+            return jsonify({"message": "Request successfully withdrawn"}), 200
+        else:
+            return jsonify({"message": "Request not found or already withdrawn"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == '__main__':
     app.run(debug=True, port=5002)

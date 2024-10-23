@@ -12,12 +12,11 @@ const ViewApplication = () => {
   const [loading, setLoading] = useState(true);
   const { staffId } = useContext(AuthContext);
 
-  // Fetch data from the API
+
   const fetchRequests = async () => {
     try {
       setLoading(true);
       
-      // Construct the URL with query parameters
       const response = await fetch(`http://localhost:5002/api/requests?status=${filter === 'all' ? '' : filter}&staff_id=${staffId}`, {
         method: 'GET',
         headers: {
@@ -29,8 +28,8 @@ const ViewApplication = () => {
         throw new Error('Failed to fetch requests.');
       }
   
-      const data = await response.json(); // Parse the JSON response
-      setRequests(data); // Set the fetched requests to state
+      const data = await response.json();
+      setRequests(data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching requests:', error);
@@ -43,7 +42,6 @@ const ViewApplication = () => {
   useEffect(() => {
     let filtered = requests;
 
-    // Filter by Staff ID and Status
     filtered = filtered.filter(request => request.Staff_ID === staffId);
     
     if (filter !== 'all') {
@@ -57,6 +55,41 @@ const ViewApplication = () => {
   useEffect(() => {
     fetchRequests();
   }, [filter]);
+
+
+  const handleCancelRequest = async (requestId, applyDate) => {
+
+    const confirmCancel = window.confirm("Are you sure you want to withdraw this request?");
+    
+    if (confirmCancel) {
+      try {
+        const encodedApplyDate = encodeURIComponent(applyDate);
+  
+        const response = await fetch(`http://localhost:5002/api/withdraw/${requestId}/${encodedApplyDate}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'Withdrawn' }),
+        });
+  
+        if (response.ok) {
+          setRequests((prevRequests) =>
+            prevRequests.map((req) =>
+              req.Request_ID === requestId && req.Apply_Date === applyDate ? { ...req, Status: 'Withdrawn' } : req
+            )
+          );
+          alert("Successfully withdrawn the request.");
+        } else {
+          console.error('Failed to withdraw the request.');
+          alert("Failed to withdraw the request.");
+        }
+      } catch (error) {
+        console.error('Error withdrawing request:', error);
+      }
+    }
+  };
+
 
   return (
     <Container fluid className="view-application" style={{ padding: '50px' }}>
@@ -73,6 +106,7 @@ const ViewApplication = () => {
             <Dropdown.Item eventKey="Pending">Pending</Dropdown.Item>
             <Dropdown.Item eventKey="Approved">Approved</Dropdown.Item>
             <Dropdown.Item eventKey="Rejected">Rejected</Dropdown.Item>
+            <Dropdown.Item eventKey="Withdrawn">Withdrawn</Dropdown.Item>
           </DropdownButton>
         </Col>
       </Row>
@@ -89,7 +123,10 @@ const ViewApplication = () => {
               <th>Duration</th>
               <th>Reason</th>
               <th>Status</th>
-              <th>File</th>
+              {(filter !== 'Rejected') &&
+                <th>File</th>
+              }
+              {(filter === 'Pending' || filter === 'Approved' || filter === 'all') && <th>Cancel</th>}
             </tr>
           </thead>
           <tbody>
@@ -107,6 +144,7 @@ const ViewApplication = () => {
                         request.Status == 'Pending' ? 'status-pending' :
                         request.Status === 'Approved' ? 'status-approved' :
                         request.Status === 'Rejected' ? 'status-rejected' :
+                        request.Status === 'Withdrawn' ? 'status-withdrawn' :
                         ''
                       }
                     >
@@ -122,6 +160,16 @@ const ViewApplication = () => {
                       '-'
                     )}
                   </td>
+                  {(request.Status === 'Pending' || request.Status === 'Approved') && (
+                    <td>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date)}
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
