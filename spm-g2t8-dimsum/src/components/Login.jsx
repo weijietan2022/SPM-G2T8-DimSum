@@ -11,11 +11,13 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);  // Access the login method from context
 
+  const API_URL = import.meta.env.VITE_API_URL_5001;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:5001/api/login', {
+      const response = await fetch(API_URL+'/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

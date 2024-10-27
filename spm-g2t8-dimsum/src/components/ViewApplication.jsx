@@ -11,13 +11,13 @@ const ViewApplication = () => {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const { staffId } = useContext(AuthContext);
-
+  const API_URL = import.meta.env.VITE_API_URL_5002;
 
   const fetchRequests = async () => {
     try {
       setLoading(true);
       
-      const response = await fetch(`http://localhost:5002/api/requests?status=${filter === 'all' ? '' : filter}&staff_id=${staffId}`, {
+      const response = await fetch(`${API_URL}/api/requests?status=${filter === 'all' ? '' : filter}&staff_id=${staffId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const ViewApplication = () => {
       try {
         const encodedApplyDate = encodeURIComponent(applyDate);
   
-        const response = await fetch(`http://localhost:5002/api/withdraw/${requestId}/${encodedApplyDate}`, {
+        const response = await fetch(`${API_URL}/api/withdraw/${requestId}/${encodedApplyDate}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ const ViewApplication = () => {
                   </td>
                   <td>
                   {request.File ? (
-                      <a href={`http://localhost:5002/api/files/${request.File}`} download>
+                      <a href={`${API_URL}/api/files/${request.File}`} download>
                         Download File
                       </a>
                     ) : (

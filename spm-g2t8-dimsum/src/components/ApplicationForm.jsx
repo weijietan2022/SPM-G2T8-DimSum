@@ -48,8 +48,10 @@ const ApplicationForm = () => {
     formData.append('staffId', staffId)
     formData.append("managerId", managerId)
 
+    const API_URL = import.meta.env.VITE_API_URL_5002;
+
     try {
-      const response = await fetch(`http://localhost:5002/api/process_request`, {
+      const response = await fetch(`${API_URL}/api/process_request`, {
         method: 'POST',
         body: formData
       });
