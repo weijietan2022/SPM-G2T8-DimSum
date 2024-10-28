@@ -64,9 +64,6 @@ def get_schedule():
     
         if userDepartment in ["Solutioning", "HR", "Engineering"]:
             teamMembers = list(userCollection.find({"Position": userPosition}))
-            # director = userCollection.find_one({"Dept": userDepartment, "Role": "Director"})
-            # if director:
-            #     teamMembers.append(director)
         else:
             teamMembers = list(userCollection.find({"Dept": userDepartment, "Position": userPosition})) 
         
@@ -74,7 +71,8 @@ def get_schedule():
         
         teamRequests = [] 
         for member in teamMembers:
-            member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Apply_Date": date}))
+            ## Get all requests for the day that are pending or approved
+            member_requests = list(requestsCollection.find({"Staff_ID": member['Staff_ID'], "Apply_Date": date, "Status": {"$in": ["Pending", "Approved"]}}))
             teamRequests.extend(member_requests)  # Add member's requests to the list
 
 
@@ -106,7 +104,7 @@ def get_schedule():
         allMembersDeptDict = {member['Staff_ID']: member['Dept'] for member in allMembers}
 
         ## Get all requests for the day
-        allRequests = list(requestsCollection.find({"Apply_Date": date}))
+        allRequests = list(requestsCollection.find({"Apply_Date": date, "Status": {"$in": ["Pending", "Approved"]}}))
 
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']
@@ -137,14 +135,13 @@ def get_schedule():
         allMembers = [member for member in allMembers if member['Position'] != 'Director']
         allMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in allMembers}
 
-        ## Get all requests for the day
-        allRequests = list(requestsCollection.find({"Apply_Date": date}))
+        # Get all requests for the day from members in the department
+        allRequests = list(requestsCollection.find({"Apply_Date": date,  "Status": {"$in": ["Pending", "Approved"]} ,"Staff_ID": {"$in": [member['Staff_ID'] for member in allMembers]}}))
 
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']
             currMemberName = allMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'] })
-            # wfh_ids.add(currMemberID)
             if singleRequest['Duration'] == "AM":
                 wfh_ids_am.add(currMemberID)
             elif singleRequest['Duration'] == "PM":
@@ -154,8 +151,6 @@ def get_schedule():
 
         
         for member in allMembers:
-            # if member['Staff_ID'] not in wfh_ids:
-            #     inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'] })
             if member['Staff_ID'] not in wfh_ids and member['Staff_ID'] not in wfh_ids_am and member['Staff_ID'] not in wfh_ids_pm:
                 inOffice.append({ "name": allMembersDict[member['Staff_ID']], "type": "Full Day", "id": member['Staff_ID'], "department": member['Dept'] })
             elif member['Staff_ID'] in wfh_ids_am:
