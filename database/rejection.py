@@ -1,14 +1,11 @@
 from pymongo import MongoClient
 from datetime import datetime
 
-# Replace with your actual MongoDB Atlas connection string
 connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
 client = MongoClient(connection_string)
 
-# Access the specific database
-db = client['Rejected']
+db = client['Rejection']
 
-# Define schema validation rules for "Rejected" collection
 validation_rules = {
     "$jsonSchema": {
         "bsonType": "object",
@@ -52,13 +49,11 @@ validation_rules = {
     }
 }
 
-# Create the "Rejected" collection with schema validation
-db.create_collection("Rejected", validator=validation_rules)
+db.create_collection("Rejection", validator=validation_rules)
 
-# Create a composite key index (Request_ID and Apply_Date should be unique together)
-db['Rejected'].create_index(
+db['Rejection'].create_index(
     [("Request_ID", 1), ("Apply_Date", 1)], 
     unique=True
 )
 
-print("Rejected collection created with schema validation and composite key index.")
+print("Rejection collection created with schema validation and composite key index.")
