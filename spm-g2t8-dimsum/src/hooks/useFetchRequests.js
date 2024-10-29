@@ -9,6 +9,7 @@ const useFetchRequests = (selectedDate, staffId) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_URL = import.meta.env.VITE_API_URL_5000;
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -18,7 +19,7 @@ const useFetchRequests = (selectedDate, staffId) => {
         console.log(selectedDate);
         const formattedDate = selectedDate.local().format("YYYY-MM-DD");
         console.log(formattedDate);
-        const response = await axios.post('http://localhost:5000/api/getSchedule', {
+        const response = await axios.post(API_URL+'/api/getSchedule', {
           date: formattedDate,
           uid: staffId, // Attach staffId to the request body
         });
