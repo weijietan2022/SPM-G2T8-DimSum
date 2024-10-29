@@ -1,15 +1,21 @@
 from flask import Flask, request, jsonify
 from flask_mail import Mail, Message
 import smtplib
+from dotenv import load_dotenv
+from pathlib import Path
+import os
 
 app = Flask(__name__)
 
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+app.secret_key = os.getenv("SECRET_KEY")
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'spmdimsum@gmail.com'
-app.config['MAIL_PASSWORD'] = 'lzjiqngfrnvushid'
+app.config['MAIL_USERNAME'] = os.getenv("EMAIL")
+app.config['MAIL_PASSWORD'] = os.getenv("EMAIL_PASSWORD")
 mail = Mail(app)
 
 @app.route("/api/sendApprovalNotification", methods=['POST'])

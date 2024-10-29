@@ -3,7 +3,9 @@ from flask_cors import CORS
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 from datetime import datetime, timedelta
-
+from dotenv import load_dotenv
+from pathlib import Path
+import os
 import gridfs
 import json
 
@@ -11,19 +13,18 @@ import json
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-app.secret_key = 'your_secret_key'
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+app.secret_key = os.getenv("SECRET_KEY")
 
 # MongoDB connection
-connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
+connection_string = os.getenv("DB_CON_STRING")
 client = MongoClient(connection_string)
-db_arrangement = client['Arrangement'] 
+db_arrangement = client[os.getenv("DB_ARRANGEMENT")]
+collection = db_arrangement[os.getenv("COLLECTION_ARRANGEMENT")]
 
-# Define your collection
-collection = db_arrangement['Arrangement']  
-
-db_new_assignment = client['NewAssignment']
-collection_new_assignment = db_new_assignment['NewAssignment']
-
+db_new_assignment = client[os.getenv("DB_USERS")]
+collection_new_assignment = db_new_assignment[os.getenv("COLLECTION_USERS")]
 
 def serialize_data(data):
     """ Convert MongoDB BSON types to JSON serializable types. """

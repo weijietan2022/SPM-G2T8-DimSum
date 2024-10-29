@@ -6,8 +6,8 @@ connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.m
 client = MongoClient(connection_string)
 
 # Specify your database and collection
-db = client['NewAssignment']  # Replace with your database name
-collection = db['NewAssignment']  # Replace with your collection name
+db = client['Users']  # Replace with your database name
+collection = db['Users']  # Replace with your collection name
 
 # Path to the CSV file
 csv_file_path = 'employeenew.csv'
