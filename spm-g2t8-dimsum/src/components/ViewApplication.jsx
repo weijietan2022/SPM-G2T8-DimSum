@@ -10,7 +10,7 @@ const ViewApplication = () => {
   const [filteredRequests, setFilteredRequests] = useState([]);
   const [filter, setFilter] = useState('Pending');
   const [loading, setLoading] = useState(true);
-  const { staffId } = useContext(AuthContext);
+  const { staffId, managerId } = useContext(AuthContext);
   const API_URL = import.meta.env.VITE_API_URL_5002;
 
   const fetchRequests = async () => {
@@ -57,7 +57,7 @@ const ViewApplication = () => {
   }, [filter]);
 
 
-  const handleCancelRequest = async (requestId, applyDate) => {
+  const handleCancelRequest = async (requestId, applyDate, duration, status, managerId, staffId) => {
 
     const confirmCancel = window.confirm("Are you sure you want to withdraw this request?");
     
@@ -65,12 +65,19 @@ const ViewApplication = () => {
       try {
         const encodedApplyDate = encodeURIComponent(applyDate);
   
-        const response = await fetch(`${API_URL}/api/withdraw/${requestId}/${encodedApplyDate}`, {
-          method: 'PUT',
+        const response = await fetch(`${API_URL}/api/withdraw`, {
+          method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ status: 'Withdrawn' }),
+          body: JSON.stringify({ 
+            requestId,
+            applyDate,
+            managerId,
+            status,
+            duration,
+            staffId,
+          }),
         });
   
         if (response.ok) {
@@ -124,9 +131,7 @@ const ViewApplication = () => {
               <th>Duration</th>
               <th>Reason</th>
               <th>Status</th>
-              {(filter !== 'Rejected') &&
-                <th>File</th>
-              }
+              <th>File</th>
               {(filter === 'Pending' || filter === 'Approved') && <th>Cancel</th>}
             </tr>
           </thead>
@@ -165,7 +170,7 @@ const ViewApplication = () => {
                     <td>
                       <button
                         className="btn btn-danger"
-                        onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date)}
+                        onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date, request.Duration, request.Status, managerId, staffId)}
                       >
                         Cancel
                       </button>

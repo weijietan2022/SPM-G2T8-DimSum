@@ -8,6 +8,7 @@ import json
 from dotenv import load_dotenv
 from pathlib import Path
 import os
+import requests
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
@@ -20,6 +21,10 @@ app.secret_key = os.getenv("SECRET_KEY")
 # MongoDB connection
 connection_string = os.getenv("DB_CON_STRING")
 client = MongoClient(connection_string)
+
+db_new_assignment = client[os.getenv("DB_USERS")]
+collection_new_assignment = db_new_assignment[os.getenv("COLLECTION_USERS")]
+
 db_arrangement = client[os.getenv("DB_ARRANGEMENT")]
 collection = db_arrangement[os.getenv("COLLECTION_ARRANGEMENT")]
 
@@ -215,27 +220,104 @@ def process():
     return jsonify({"status": "success", "message": "request inserted"}), 200
 
 
-@app.route('/api/withdraw/<request_id>/<apply_date>', methods=['PUT'])
-def withdraw_request(request_id, apply_date):
-    try:
-        result = collection.update_one(
-            {
-                "Request_ID": int(request_id),
-                "Apply_Date": apply_date
-            },
-            {
-                "$set": {
-                    "Status": "Withdrawn"
-                }
-            }
-        )
+@app.route('/api/withdraw', methods=['POST'])
+def withdraw_request():
+    data = request.json
+    request_id = data.get('requestId')
+    apply_date = data.get('applyDate')
+    managerId = data.get('managerId')
+    duration = data.get('duration')
+    staffId = data.get('staffId')
+    status = data.get('status')
+
+    if (status == "Approved"):
+        try:
+            ManagerDetails = collection_new_assignment.find_one({"Staff_ID":managerId})
+            manager_email = ManagerDetails.get("Email")
+            manager_fname = ManagerDetails.get("Staff_FName")
+            manager_lname = ManagerDetails.get("Staff_LName")
+            manager_name = manager_fname + " " + manager_lname
+            print("heyhey")
+            print(manager_name)
+        except Exception as e:
+                print(f"There is an error: {str(e)}")
+                return jsonify({"error": "An error occurred", "details": str(e)}), 500  
+
+        try:
+            EmployeeDetails = collection_new_assignment.find_one({"Staff_ID":staffId})
+            emp_fname = EmployeeDetails.get("Staff_FName")
+            emp_lname = EmployeeDetails.get("Staff_LName")
+            emp_name = emp_fname + " " + emp_lname
+            print("heyhey2")
+            print(emp_name)
+        except Exception as e:
+                print(f"There is an error: {str(e)}")
+                return jsonify({"error": "An error occurred", "details": str(e)}), 500
         
-        if result.modified_count > 0:
-            return jsonify({"message": "Request successfully withdrawn"}), 200
-        else:
-            return jsonify({"message": "Request not found or already withdrawn"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        notification_URL = "http://127.0.0.1:5003/api/sendCancellationNotification"
+
+        Notification = {
+            "name": emp_name,
+            "managerEmail": "calebyap0@gmail.com",
+            "managerName": manager_name,
+            "requestId": request_id,
+            "date": apply_date,
+            "type": duration
+        } 
+
+        try:
+            print("trying to update database")
+            print(request_id)
+            print(type(request_id))
+            print(apply_date)
+            print(type(apply_date))
+
+            result = collection.update_one(
+                {
+                    "Request_ID": int(request_id),
+                    "Apply_Date": apply_date
+                },
+                {
+                    "$set": {
+                        "Status": "Withdrawn"
+                    }
+                }
+            )
+            
+            if result.modified_count > 0:
+                Notifresponse = requests.post(notification_URL, json=Notification)
+                if Notifresponse.status_code == 200:
+                    print("Notification sent successfully.")
+                else:
+                    print(f"Failed to send notification: {Notifresponse.json()}")
+                return jsonify({"message": "Request successfully withdrawn"}), 200
+            else:
+                return jsonify({"message": "Request not found or already withdrawn"}), 404
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+        
+    else:
+        try:
+            result = collection.update_one(
+                {
+                    "Request_ID": int(request_id),
+                    "Apply_Date": apply_date
+                },
+                {
+                    "$set": {
+                        "Status": "Withdrawn"
+                    }
+                }
+            )
+
+            if result.modified_count > 0:
+                return jsonify({"message": "Request successfully withdrawn"}), 200
+            else:
+                return jsonify({"message": "Request not found or already withdrawn"}), 404
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+
     
 
 if __name__ == '__main__':
