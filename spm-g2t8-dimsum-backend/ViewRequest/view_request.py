@@ -26,6 +26,13 @@ collection = db_arrangement[os.getenv("COLLECTION_ARRANGEMENT")]
 db_new_assignment = client[os.getenv("DB_USERS")]
 collection_new_assignment = db_new_assignment[os.getenv("COLLECTION_USERS")]
 
+
+db_rejection = client[os.getenv("DB_REJECTION")]
+Reject_Collection = db_rejection[os.getenv("COLLECTION_REJECTION")]
+
+file_storage = client['file_storage']
+fs = gridfs.GridFS(file_storage)
+
 def serialize_data(data):
     """ Convert MongoDB BSON types to JSON serializable types. """
     if isinstance(data, ObjectId):
@@ -40,15 +47,10 @@ def serialize_data(data):
 
 @app.route('/api/view-request', methods=['GET'])
 def getRequest():
-
-
     Dept = request.args.get('dept')
     id = request.args.get('staffId')
     id = int(id)
-    Position = request.args.get('position')
-    
-  
-    
+    Position = request.args.get('position')  
     stat = request.args.get('status', 'Pending')
 
     requests = ViewRequest(id, Position, Dept,stat)
