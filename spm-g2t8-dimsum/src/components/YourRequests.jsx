@@ -110,6 +110,7 @@ const YourRequests = () => {
               return response.json();
             })
             .then(data => {
+              alert('Approval Successful!');
               console.log('Approval request processed:', data);
             })
             .catch(err => setError(err.message));
@@ -147,6 +148,7 @@ const YourRequests = () => {
               <tr>
                 <th>Request ID</th>
                 <th>Staff ID</th>
+                <th>Staff Name</th>
                 <th>Request Date</th>
                 <th>Apply Date</th>
                 <th>Duration</th>
@@ -163,6 +165,7 @@ const YourRequests = () => {
                 <tr key={request.Request_ID}>
                   <td>{request.Request_ID}</td>
                   <td>{request.Staff_ID}</td>
+                  <td>{request.name}</td>
                   <td>{new Date(request.Request_Date).toLocaleDateString()}</td>
                   <td>{request.Apply_Date}</td>
                   <td>{request.Duration}</td>

@@ -68,6 +68,10 @@ def getRequest():
         staff_data = collection_new_assignment.find_one({"Staff_ID": staff_id})
         if staff_data and "Dept" in staff_data:
             req["Department"] = staff_data["Dept"]
+            F_Name = staff_data.get('Staff_FName', "")
+            L_Name = staff_data.get('Staff_LName', "")
+            name = f"{F_Name} {L_Name}".strip()
+            req["name"] = name
         
         enriched_requests.append(req)
 
