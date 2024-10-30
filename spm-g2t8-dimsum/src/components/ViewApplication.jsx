@@ -8,7 +8,7 @@ import { AuthContext } from '../context/AuthContext';
 const ViewApplication = () => {
   const [requests, setRequests] = useState([]);
   const [filteredRequests, setFilteredRequests] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('Pending');
   const [loading, setLoading] = useState(true);
   const { staffId } = useContext(AuthContext);
   const API_URL = import.meta.env.VITE_API_URL_5002;
@@ -17,7 +17,7 @@ const ViewApplication = () => {
     try {
       setLoading(true);
       
-      const response = await fetch(`${API_URL}/api/requests?status=${filter === 'all' ? '' : filter}&staff_id=${staffId}`, {
+      const response = await fetch(`${API_URL}/api/requests?status=${filter}&staff_id=${staffId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ const ViewApplication = () => {
 
     filtered = filtered.filter(request => request.Staff_ID === staffId);
     
-    if (filter !== 'all') {
+    if (filter !== 'Pending') {
       filtered = filtered.filter(request => request.Status === filter);
     }
 
@@ -80,6 +80,8 @@ const ViewApplication = () => {
             )
           );
           alert("Successfully withdrawn the request.");
+
+          fetchRequests();
         } else {
           console.error('Failed to withdraw the request.');
           alert("Failed to withdraw the request.");
@@ -98,11 +100,10 @@ const ViewApplication = () => {
       <Row className="mb-3">
         <Col md={4}>
           <DropdownButton
-            title={filter === 'all' ? 'All Statuses' : filter}
+            title={filter}
             variant="secondary"
             onSelect={(selected) => setFilter(selected)}
           >
-            <Dropdown.Item eventKey="all">All Statuses</Dropdown.Item>
             <Dropdown.Item eventKey="Pending">Pending</Dropdown.Item>
             <Dropdown.Item eventKey="Approved">Approved</Dropdown.Item>
             <Dropdown.Item eventKey="Rejected">Rejected</Dropdown.Item>
@@ -126,7 +127,7 @@ const ViewApplication = () => {
               {(filter !== 'Rejected') &&
                 <th>File</th>
               }
-              {(filter === 'Pending' || filter === 'Approved' || filter === 'all') && <th>Cancel</th>}
+              {(filter === 'Pending' || filter === 'Approved') && <th>Cancel</th>}
             </tr>
           </thead>
           <tbody>

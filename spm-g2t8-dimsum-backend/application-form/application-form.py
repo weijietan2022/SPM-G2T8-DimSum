@@ -155,15 +155,15 @@ def process():
 
         # clashing conditions based on duration
         if duration == "Full Day":
-            check_clash_query["$or"].append({"Duration": "Full Day"})
-            check_clash_query["$or"].append({"Duration": "AM"})
-            check_clash_query["$or"].append({"Duration": "PM"})
+            check_clash_query["$or"].append({"Duration": "Full Day", "Status": {"$in": ["Approved", "Pending"]}})
+            check_clash_query["$or"].append({"Duration": "AM", "Status": {"$in": ["Approved", "Pending"]}})
+            check_clash_query["$or"].append({"Duration": "PM", "Status": {"$in": ["Approved", "Pending"]}})
         elif duration == "AM":
-            check_clash_query["$or"].append({"Duration": "AM"})
-            check_clash_query["$or"].append({"Duration": "Full Day"})
+            check_clash_query["$or"].append({"Duration": "AM", "Status": {"$in": ["Approved", "Pending"]}})
+            check_clash_query["$or"].append({"Duration": "Full Day", "Status": {"$in": ["Approved", "Pending"]}})
         elif duration == "PM":
-            check_clash_query["$or"].append({"Duration": "PM"})
-            check_clash_query["$or"].append({"Duration": "Full Day"})
+            check_clash_query["$or"].append({"Duration": "PM", "Status": {"$in": ["Approved", "Pending"]}})
+            check_clash_query["$or"].append({"Duration": "Full Day", "Status": {"$in": ["Approved", "Pending"]}})
 
         existing_record = db_arrangement["Arrangement"].find_one(check_clash_query)
 
@@ -211,7 +211,6 @@ def process():
             print(f"Insert error: {e}")
             flash(f"Error in putting in DB")
             return jsonify({"status": "fail", "message": "Error inserting request into database."}), 401
-
 
     return jsonify({"status": "success", "message": "request inserted"}), 200
 
