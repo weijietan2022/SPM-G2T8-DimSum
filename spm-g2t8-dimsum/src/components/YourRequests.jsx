@@ -8,8 +8,11 @@ const YourRequests = () => {
   const [loading, setLoading] = useState(true);  // To manage loading state
   const [error, setError] = useState(null);      // To handle any errors
   const [statusFilter, setStatusFilter] = useState('All');  // Default to 'All'
-  const API_URL = import.meta.env.VITE_API_URL_5008;
+  const [ModalVisible, ModalVisi] = useState(false); 
+  const [reason, setReason] = useState(''); 
+  const [Request, setRequest] = useState(null)
 
+  const API_URL = import.meta.env.VITE_API_URL_5008;
   // Fetch requests whenever statusFilter changes
   useEffect(() => {
     setError(null);
@@ -33,7 +36,48 @@ const YourRequests = () => {
       });
   }, [statusFilter]);
 
-  // Function to handle approval or rejection of a request
+    const handleReject = (request) =>{
+      setRequest(request)
+      ModalVisi(true);
+    }
+
+    const handleCloseModal = () => {
+      ModalVisi(false); 
+      setReason(''); 
+    };
+
+    const handleSubmit = (e) => {
+      e.preventDefault(); 
+      if (reason) {
+        alert(`Rejection Reason: ${reason}`);
+        updateRequestStatus(Request.Request_ID, 'Rejected');
+        submitRejection(Request, reason);
+        ModalVisi(false); 
+        setReason(''); 
+      } else {
+        alert('Please provide a reason for rejection');
+      }
+    };
+
+
+    const submitRejection = (request, reason) => {
+      fetch(`${API_URL}/api/reject-request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ...request, reason }),
+      })
+        .then(response => {
+          if (!response.ok) throw new Error('Failed to submit rejection');
+          return response.json();
+        })
+        .then(data => {
+          console.log('Rejection submitted:', data);
+        })
+        .catch(err => setError(err.message));
+    };
+
   const updateRequestStatus = (requestId, newStatus) => {
     fetch(`${API_URL}/api/update-request`, {
       method: 'POST',
@@ -92,6 +136,8 @@ const YourRequests = () => {
                 <th>Reason</th>
                 <th>Status</th>
                 <th>Department</th>
+                <th>Manager</th>
+                <th>File</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -106,6 +152,16 @@ const YourRequests = () => {
                   <td>{request.Reason}</td>
                   <td>{request.Status}</td>
                   <td>{request.Department}</td>
+                  <td>{request.Manager_ID}</td>
+                  <td>
+                  {request.File ? (
+                      <a href={`${API_URL}/api/files/${request.File}`} download>
+                        Download File
+                      </a>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
                   <td>
                     <div className="action-buttons">
                       <button 
@@ -116,7 +172,8 @@ const YourRequests = () => {
                       </button>
                       <button 
                         className="reject-button" 
-                        onClick={() => updateRequestStatus(request.Request_ID, 'Rejected')}
+                        // onClick={() => updateRequestStatus(request.Request_ID, 'Rejected')}
+                        onClick={()=>handleReject(request)}
                       >
                         Reject
                       </button>
@@ -128,7 +185,27 @@ const YourRequests = () => {
               ))}
             </tbody>
           </table>
+          {ModalVisible && (
+            <div className="custom">
+              <div className="custom-cont slide-down-animation">
+                <h3>Enter Rejection Reason</h3>
+                <br></br>
+                <form onSubmit={handleSubmit}>
+                  <textarea row='5' cols='50' style={{borderRadius:'10px',border: '1px solid rgba(0, 0, 0, 0.2)' }}
+                    placeholder=""
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                  <br />
+                  <br></br>
+                  <button type="submit" className="green-button">Submit</button>
+                  <button type="button" className="red-button" onClick={handleCloseModal}>Cancel</button>
+                </form>
+              </div>
+            </div>
+          )}
         </center>
+          
       ) : (
         <p>No requests found</p>
       )}

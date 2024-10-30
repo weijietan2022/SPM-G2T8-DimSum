@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, redirect, url_for, flash, render_template, session
+from flask import Flask, jsonify, request, redirect, url_for, flash, render_template, session, send_file
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson.objectid import ObjectId
@@ -17,9 +17,17 @@ app.secret_key = 'your_secret_key'
 connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
 client = MongoClient(connection_string)
 db_arrangement = client['Arrangement'] 
+db_rejection = client['Rejection']
+# db_rejection = client['']
 
 # Define your collection
 collection = db_arrangement['Arrangement']  
+Reject_Collection = db_rejection['Rejection']
+
+
+file_storage = client['file_storage']
+fs = gridfs.GridFS(file_storage)
+
 
 db_new_assignment = client['NewAssignment']
 collection_new_assignment = db_new_assignment['NewAssignment']
@@ -113,7 +121,6 @@ def get_requests():
 
 @app.route('/api/update-request', methods=['POST'])
 def update_request_status():
-    print("it comes in HEREEEEEEEEEEEEEE")
     data = request.json
     request_id = data.get('requestId')
     new_status = data.get('status')
@@ -132,6 +139,60 @@ def update_request_status():
         return jsonify({"message": f"Request {new_status} successfully."}), 200
     else:
         return jsonify({"error": "Failed to update request status"}), 500
+    
+@app.route('/api/files/<file_id>', methods=['GET'])
+def download_file(file_id):
+    try:
+        print(f"Received file ID: {file_id}")
+        
+        if not ObjectId.is_valid(file_id):
+            return jsonify({"error": "Invalid file ID"}), 400
+        
+        file = fs.get(ObjectId(file_id))
+        
+        return send_file(file, download_name=file.filename, as_attachment=True)
+    
+    except gridfs.errors.NoFile:
+        print(f"No file found with ID: {file_id}")
+        return jsonify({"error": "File not found"}), 404
+    
+    except Exception as e:
+        print(f"Error downloading file: {str(e)}")
+        return jsonify({"error": "An error occurred", "details": str(e)}), 500
+    
+
+@app.route('/api/reject-request', methods=['POST'])
+def reject_request():
+    data = request.json
+    request_id = data.get('Request_ID')
+    staff_id = data.get('Staff_ID')
+    request_date = data.get('Request_Date')
+    apply_date = data.get('Apply_Date')
+    duration = data.get('Duration')
+    manager_id = data.get('Manager_ID')
+    reason = data.get('Reason')
+    status = 'Rejected'
+
+    rejected = {
+        "Request_ID": request_id,
+        "Staff_ID": staff_id,
+        "Request_Date": request_date,
+        "Apply_Date": apply_date,
+        "Duration": duration,
+        "Reason": reason,
+        "Manager_ID": manager_id,
+        "Status": status,
+        "File": "Null"
+    }
+    
+    try:
+        Reject_Collection.insert_one(rejected)
+        return jsonify({"message": "Rejection submitted successfully"}), 200
+    except Exception as e:
+        print("Error", e)
+        return jsonify({"error": "Failed to submit into rejected database"}), 500
+
+
 
 
 if __name__ == '__main__':
