@@ -2,22 +2,23 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from pymongo import MongoClient
 from datetime import datetime
-
+from dotenv import load_dotenv
+from pathlib import Path
+import os
 
 app = Flask(__name__)
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.mongodb.net/"
-
-app.secret_key = 'your_secret_key'
-
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+app.secret_key = os.getenv("SECRET_KEY")
+connection_string = os.getenv("DB_CON_STRING")
 client = MongoClient(connection_string)
-userDb = client['NewAssignment'] 
-userCollection = userDb['NewAssignment']  
-
-requestsDb = client['Arrangement']
-requestsCollection = requestsDb['Arrangement']
+userDb = client[os.getenv("DB_USERS")]
+userCollection = userDb[os.getenv("COLLECTION_USERS")]
+requestsDb = client[os.getenv("DB_ARRANGEMENT")]
+requestsCollection = requestsDb[os.getenv("COLLECTION_ARRANGEMENT")]
 
 
 @app.route('/api/getSchedule', methods=['POST'])
@@ -42,8 +43,6 @@ def get_schedule():
 
     date = datetime.strptime(date_str, "%Y-%m-%d")
     date = date.strftime("%d %B %Y")
-
-    print(date)
     
     userData = userCollection.find_one({"Staff_ID": uid})
     if not userData:
@@ -108,7 +107,6 @@ def get_schedule():
 
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']
-            print(currMemberID)
             currMemberName = allMembersDict[currMemberID]
             wfh.append({ "name": currMemberName, "id": currMemberID, "type": singleRequest['Duration'], "status": singleRequest['Status'], "department": allMembersDeptDict[currMemberID] })
             if singleRequest['Duration'] == "AM":

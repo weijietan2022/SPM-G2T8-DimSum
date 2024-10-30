@@ -10,5 +10,5 @@ client = MongoClient(connection_string)
 # Access the specific database
 db_arrangement = client['Arrangement']
 
-result = db_arrangement['Arrangement'].delete_many({"Apply_Date": "11 November 2024"})
-
+# Delete all documents
+db_arrangement['Arrangement'].delete_many({})

@@ -5,23 +5,26 @@ from bson.objectid import ObjectId
 from datetime import datetime
 import gridfs
 import json
-
-
+from dotenv import load_dotenv
+from pathlib import Path
+import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'])
 
-app.secret_key = 'your_secret_key'
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+app.secret_key = os.getenv("SECRET_KEY")
 
 # MongoDB connection
-connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
+connection_string = os.getenv("DB_CON_STRING")
 client = MongoClient(connection_string)
-db_arrangement = client['Arrangement'] 
-collection = db_arrangement['Arrangement']
+db_arrangement = client[os.getenv("DB_ARRANGEMENT")]
+collection = db_arrangement[os.getenv("COLLECTION_ARRANGEMENT")]
 
 file_storage = client['file_storage']
 fs = gridfs.GridFS(file_storage)
-
 
 def get_next_sequence_value(sequence_name):
     result = db_arrangement['counters'].find_one_and_update(

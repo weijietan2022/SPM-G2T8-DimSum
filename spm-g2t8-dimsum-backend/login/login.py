@@ -1,22 +1,22 @@
 from flask import Flask, request, jsonify, flash, redirect, url_for,session
 from flask_cors import CORS
-## Do pip install pymongo in your terminal
 from pymongo import MongoClient
-
+from dotenv import load_dotenv
+from pathlib import Path
+import os
 
 app = Flask(__name__)
-
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
-connection_string = "mongodb+srv://jiaqinggui:jq2022@assignment.9wecd.mongodb.net/"
+app.secret_key = os.getenv("SECRET_KEY")
 
-app.secret_key = 'your_secret_key'
-
+connection_string = os.getenv("DB_CON_STRING")
 client = MongoClient(connection_string)
-db = client['NewAssignment'] 
-collection = db['NewAssignment']  
-
+db = client[os.getenv("DB_USERS")]
+collection = db[os.getenv("COLLECTION_USERS")]
 
 @app.route('/api/login', methods=['POST'])
 def handle_login():

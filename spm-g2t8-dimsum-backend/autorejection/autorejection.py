@@ -1,18 +1,25 @@
 import pymongo
 from datetime import datetime, timedelta
 import requests
+from dotenv import load_dotenv
+from pathlib import Path
+import os
+
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
 
 # MongoDB connection setup
-connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.mongodb.net/"
+connection_string = os.getenv("DB_CON_STRING")
 client = pymongo.MongoClient(connection_string)
-requests_db = client["Arrangement"]
-requests_collection = requests_db["Arrangement"]
+requests_db = client[os.getenv("DB_ARRANGEMENT")]
+requests_collection = requests_db[os.getenv("COLLECTION_ARRANGEMENT")]
 
-rejection_db = client["Rejection"]
-rejection_collection = rejection_db["Rejection"]
+rejection_db = client[os.getenv("DB_REJECTION")]
+rejection_collection = rejection_db[os.getenv("COLLECTION_REJECTION")]
 
-users_db = client["NewAssignment"]
-users_collection = users_db["NewAssignment"]
+users_db = client[os.getenv("DB_USERS")]
+users_collection = users_db[os.getenv("COLLECTION_USERS")]
 
 
 ## Rejection Collection Class
