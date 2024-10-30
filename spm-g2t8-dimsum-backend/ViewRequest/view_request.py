@@ -51,7 +51,7 @@ def getRequest():
     stat = request.args.get('status', 'Pending')
 
     requests = ViewRequest(id, Position, Dept,stat)
-    print(f"Returning requests for status {stat}: {requests}")
+    # print(f"Returning requests for status {stat}: {requests}")
 
     enriched_requests = []
     for req in requests:
@@ -113,9 +113,11 @@ def get_requests():
 
 @app.route('/api/update-request', methods=['POST'])
 def update_request_status():
+    print("it comes in HEREEEEEEEEEEEEEE")
     data = request.json
     request_id = data.get('requestId')
     new_status = data.get('status')
+    print(new_status)
 
     if not request_id or new_status not in ['Approved', 'Rejected']:
         return jsonify({"error": "Invalid request data"}), 400
