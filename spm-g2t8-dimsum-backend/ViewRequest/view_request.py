@@ -8,6 +8,7 @@ from pathlib import Path
 import os
 import gridfs
 import json
+import requests
 
 
 app = Flask(__name__)
@@ -27,8 +28,13 @@ db_new_assignment = client[os.getenv("DB_USERS")]
 collection_new_assignment = db_new_assignment[os.getenv("COLLECTION_USERS")]
 
 
+db_approval = client[os.getenv("DB_APPROVAL")]
+collection_approval = db_approval[os.getenv("COLLECTION_APPROVAL")]
+
+
 db_rejection = client[os.getenv("DB_REJECTION")]
 Reject_Collection = db_rejection[os.getenv("COLLECTION_REJECTION")]
+
 
 file_storage = client['file_storage']
 fs = gridfs.GridFS(file_storage)
@@ -68,7 +74,7 @@ def getRequest():
     return jsonify([serialize_data(req) for req in enriched_requests])
 
 
-    # Serialize the requests and return them as a JSON response
+    
     return jsonify([serialize_data(req) for req in requests])
 def ViewRequest(id, Position, Dept, status):
     query = {}
@@ -76,17 +82,11 @@ def ViewRequest(id, Position, Dept, status):
     if status != 'All':
         query["Status"] = status
 
-    if Position == 'MD':
-        requests = collection.find(query)
-
-    # elif Position == 'Director':
-    #     # Director sees all requests in their department filtered by status
-    #     deptStaff = list(collection.find({"Department": Dept}, {"Staff_ID": 1}))
-    #     Dept_ids = [staff["Staff_ID"] for staff in deptStaff]
-    #     query["Staff_ID"] = {"$in": Dept_ids}
+    # if Position == 'MD':
     #     requests = collection.find(query)
 
-    elif "Manager" in Position or Position == "Director":
+
+    if "Manager" in Position or Position == "Director" or Position =='MD':
         listofids = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
         if listofids:
             ids = [report["Staff_ID"] for report in listofids]
@@ -162,11 +162,23 @@ def reject_request():
     request_id = data.get('Request_ID')
     staff_id = data.get('Staff_ID')
     request_date = data.get('Request_Date')
+    request_date = datetime.fromisoformat(request_date) if isinstance(request_date, str) else request_date
     apply_date = data.get('Apply_Date')
     duration = data.get('Duration')
     manager_id = data.get('Manager_ID')
     reason = data.get('Reason')
     status = 'Rejected'
+    print(reason)
+    try:
+             EmployeeDetails = collection_new_assignment.find_one({"Staff_ID":staff_id})
+             email = EmployeeDetails.get("Email")
+             print(email)
+             fname = EmployeeDetails.get("Staff_FName")
+             lname = EmployeeDetails.get("Staff_LName")
+             name = fname + " " + lname  
+    except Exception as e:
+            print(f"There is an error: {str(e)}")
+            return jsonify({"error": "An error occurred", "details": str(e)}), 500
 
     rejected = {
         "Request_ID": request_id,
@@ -174,11 +186,25 @@ def reject_request():
         "Request_Date": request_date,
         "Apply_Date": apply_date,
         "Duration": duration,
-        "Reason": reason,
         "Manager_ID": manager_id,
-        "Status": status,
-        "File": "Null"
+        "Reason": reason,
+        "Reject_Date_Time": datetime.now()
     }
+
+    Notification = {
+            "requestId": request_id,
+            "date": apply_date,
+            "email": "weenxiaang@gmail.com",
+            "name": name, 
+            "type": duration
+        }
+    
+    notification_URL = "http://127.0.0.1:5003/api/sendRejectionNotification"
+    Notifresponse = requests.post(notification_URL, json=Notification)
+    if Notifresponse.status_code == 200:
+        print("Notification sent successfully.")
+    else:
+        print(f"Failed to send notification: {Notifresponse.json()}")
     
     try:
         Reject_Collection.insert_one(rejected)
@@ -186,6 +212,63 @@ def reject_request():
     except Exception as e:
         print("Error", e)
         return jsonify({"error": "Failed to submit into rejected database"}), 500
+    
+
+@app.route('/api/approve-request', methods=['POST'])
+def approve_request():
+    data = request.json
+    request_ID = data.get('requestId')
+    if not request_ID:
+        return jsonify({"Error":"No request_ID"})
+    try:
+        requestDetails = collection.find_one({"Request_ID":request_ID})
+        if not requestDetails:
+            return jsonify({"Error": "Request is not found"})
+        Apply_Date = requestDetails.get("Apply_Date")
+        ManagerID = requestDetails.get("Manager_ID")
+        StaffID = requestDetails.get("Staff_ID")
+        typeofreq = requestDetails.get("Duration")
+        try:
+             EmployeeDetails = collection_new_assignment.find_one({"Staff_ID":StaffID})
+             email = EmployeeDetails.get("Email")
+             print(email)
+             fname = EmployeeDetails.get("Staff_FName")
+             lname = EmployeeDetails.get("Staff_LName")
+             name = fname + " " + lname  
+        except Exception as e:
+            print(f"There is an error: {str(e)}")
+            return jsonify({"error": "An error occurred", "details": str(e)}), 500
+        
+        # change to your own email to test
+        Notification = {
+            "requestId": request_ID,
+            "date": Apply_Date,
+            "email": "weenxiaang@gmail.com",
+            "name": name, 
+            "type": typeofreq
+        }
+
+        notification_URL = "http://127.0.0.1:5003/api/sendApprovalNotification"
+        Notifresponse = requests.post(notification_URL, json=Notification)
+        if Notifresponse.status_code == 200:
+            print("Notification sent successfully.")
+        else:
+            print(f"Failed to send notification: {Notifresponse.json()}")
+
+        Approved = {    
+            "Request_ID": request_ID,
+            "Apply_Date": Apply_Date,
+            "Manager_ID": ManagerID,
+            "Approve_Date_Time": datetime.now()
+        }
+        collection_approval.insert_one(Approved)
+
+        return jsonify({"Message": "Request is sent to the approval database"})
+    
+    except Exception as e:
+                print(f"There is an error: {str(e)}")
+                return jsonify({"error": "An error occurred", "details": str(e)}), 500
+
 
 
 

@@ -97,6 +97,23 @@ const YourRequests = () => {
             request.Request_ID === requestId ? { ...request, Status: newStatus } : request
           )
         );
+        if(newStatus == 'Approved'){
+          fetch(`${API_URL}/api/approve-request`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ requestId }),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('Failed to process approval request');
+              return response.json();
+            })
+            .then(data => {
+              console.log('Approval request processed:', data);
+            })
+            .catch(err => setError(err.message));
+        }
       })
       .catch(err => setError(err.message));
   };
