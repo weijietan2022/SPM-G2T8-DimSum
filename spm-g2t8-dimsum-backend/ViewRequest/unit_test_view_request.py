@@ -184,6 +184,26 @@ class UnitTestViewRequest(unittest.TestCase):
         # Validate JSON response content
         response_json = response.get_json()
         self.assertEqual(response_json['error'], 'Invalid request data')
+    from unittest.mock import patch
+
+# Test /api/approve-request notification handling
+@patch('view_request.requests.post')
+def test_approve_request_notification_success(self, mock_post):
+    mock_post.return_value.status_code = 200
+    response = self.app.post('/api/approve-request', json={'requestId': '507f1f77bcf86cd799439011'})
+    
+    self.assertEqual(response.status_code, 200)
+    self.assertIn("Request is sent to the approval database", response.get_json()["Message"])
+    mock_post.assert_called_once()
+
+@patch('view_request.requests.post')
+def test_approve_request_notification_failure(self, mock_post):
+    mock_post.return_value.status_code = 500
+    response = self.app.post('/api/approve-request', json={'requestId': '507f1f77bcf86cd799439011'})
+    
+    self.assertEqual(response.status_code, 500)
+    mock_post.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()

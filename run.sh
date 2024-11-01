@@ -7,7 +7,7 @@ declare -A folder_scripts=(
     ["notification"]="notification.py"
     ["login"]="login.py"
     ["autorejection"]="autorejection.py"
-    ["application-form"]="application_form.py"
+    ["application-form"]="application-form.py"
 )
 
 # Loop through each folder and execute the corresponding Python script
