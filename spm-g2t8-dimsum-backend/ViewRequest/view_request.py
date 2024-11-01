@@ -123,6 +123,8 @@ def update_request_status():
     data = request.json
     request_id = data.get('requestId')
     new_status = data.get('status')
+    date = data.get('date')
+    duration = data.get('duration')
     print(new_status)
 
     if not request_id or new_status not in ['Approved', 'Rejected']:
@@ -130,7 +132,7 @@ def update_request_status():
 
     # Update the status in the database
     result = collection.update_one(
-        {"Request_ID": request_id},
+        {"Request_ID": request_id, "Apply_Date": date, "Duration": duration},
         {"$set": {"Status": new_status}}
     )
 
@@ -162,6 +164,7 @@ def download_file(file_id):
 
 @app.route('/api/reject-request', methods=['POST'])
 def reject_request():
+    print(request.json)
     data = request.json
     request_id = data.get('Request_ID')
     staff_id = data.get('Staff_ID')
@@ -170,9 +173,9 @@ def reject_request():
     apply_date = data.get('Apply_Date')
     duration = data.get('Duration')
     manager_id = data.get('Manager_ID')
-    reason = data.get('Reason')
+    rejectionReason = data.get('rejectionReason')
     status = 'Rejected'
-    print(reason)
+    print(rejectionReason)
     try:
              EmployeeDetails = collection_new_assignment.find_one({"Staff_ID":staff_id})
              email = EmployeeDetails.get("Email")
@@ -191,7 +194,7 @@ def reject_request():
         "Apply_Date": apply_date,
         "Duration": duration,
         "Manager_ID": manager_id,
-        "Reason": reason,
+        "Reason": rejectionReason,
         "Reject_Date_Time": datetime.now()
     }
 
@@ -222,10 +225,12 @@ def reject_request():
 def approve_request():
     data = request.json
     request_ID = data.get('requestId')
+    date = data.get('date')
+    duration = data.get('duration')
     if not request_ID:
         return jsonify({"Error":"No request_ID"})
     try:
-        requestDetails = collection.find_one({"Request_ID":request_ID})
+        requestDetails = collection.find_one({"Request_ID":request_ID, "Apply_Date": date, "Duration": duration})
         if not requestDetails:
             return jsonify({"Error": "Request is not found"})
         Apply_Date = requestDetails.get("Apply_Date")

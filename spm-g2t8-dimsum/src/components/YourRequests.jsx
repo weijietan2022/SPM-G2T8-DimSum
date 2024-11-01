@@ -50,7 +50,7 @@ const YourRequests = () => {
       e.preventDefault(); 
       if (reason) {
         alert(`Rejection Reason: ${reason}`);
-        updateRequestStatus(Request.Request_ID, 'Rejected');
+        updateRequestStatus(Request.Request_ID, 'Rejected', Request.Apply_Date, Request.Duration);
         submitRejection(Request, reason);
         ModalVisi(false); 
         setReason(''); 
@@ -66,7 +66,7 @@ const YourRequests = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...request, reason }),
+        body: JSON.stringify({ ...request, rejectionReason: reason }),
       })
         .then(response => {
           if (!response.ok) throw new Error('Failed to submit rejection');
@@ -78,32 +78,34 @@ const YourRequests = () => {
         .catch(err => setError(err.message));
     };
 
-  const updateRequestStatus = (requestId, newStatus) => {
+  const updateRequestStatus = (requestId, newStatus, date, duration) => {
     fetch(`${API_URL}/api/update-request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ requestId, status: newStatus }),
+      body: JSON.stringify({ requestId, status: newStatus, date: date, duration: duration }),
     })
       .then(response => {
         if (!response.ok) throw new Error(`Failed to ${newStatus.toLowerCase()} the request`);
         return response.json();
       })
       .then(() => {
-        // Update the request status locally to avoid refetching
+        // Update the status of the request in the UI based on the request ID and request DATE
         setRequests(prevRequests =>
           prevRequests.map(request =>
-            request.Request_ID === requestId ? { ...request, Status: newStatus } : request
+            request.Request_ID === requestId && request.Apply_Date === date
+              ? { ...request, Status: newStatus }
+              : request
           )
-        );
+        );        
         if(newStatus == 'Approved'){
           fetch(`${API_URL}/api/approve-request`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ requestId }),
+            body: JSON.stringify({ requestId, date: date, duration: duration}),
           })
             .then(response => {
               if (!response.ok) throw new Error('Failed to process approval request');
@@ -186,7 +188,7 @@ const YourRequests = () => {
                     <div className="action-buttons">
                       <button 
                         className="approve-button" 
-                        onClick={() => updateRequestStatus(request.Request_ID, 'Approved')}
+                        onClick={() => updateRequestStatus(request.Request_ID, 'Approved', request.Apply_Date, request.Duration)}
                       >
                         Approve
                       </button>
