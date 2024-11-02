@@ -21,14 +21,12 @@ mail = Mail(app)
 @app.route("/api/sendApprovalNotification", methods=['POST'])
 def sendNotification():
     if not request.is_json:
-        print("Request must be in JSON format")
         return jsonify({"error": "Request must be in JSON format"}), 400
     
     data = request.json
 
     if 'email' not in data or 'name' not in data or 'requestId' not in data or 'date' not in data or 'type' not in data:
-        print("Missing 'email' or 'status' in request body")
-        return jsonify({"error": "Missing 'email' or 'status' in request body"}), 404
+        return jsonify({"error": "Missing information in request body"}), 404
     
     email = data['email']
     name = data['name']
@@ -54,15 +52,15 @@ def sendNotification():
 
 @app.route("/api/sendRejectionNotification", methods=['POST'])
 def sendRejectionNotification():
+
+    print("Triggered")
     if not request.is_json:
-        print("Request must be in JSON format")
         return jsonify({"error": "Request must be in JSON format"}), 400
     
     data = request.json
 
     if 'email' not in data or 'name' not in data or 'requestId' not in data or 'date' not in data or 'type' not in data:
-        print("Missing 'email' or 'status' in request body")
-        return jsonify({"error": "Missing 'email' or 'status' in request body"}), 404
+        return jsonify({"error": "Missing information in request body"}), 404
     
     email = data['email']
     name = data['name']
@@ -70,6 +68,7 @@ def sendRejectionNotification():
     date = data['date']
     type = data['type']
     
+    print("Checks complete. ")
     msg = Message(
         subject="Outcome of WFH Request",
         sender="spmdimsum@gmail.com",
@@ -88,14 +87,12 @@ def sendRejectionNotification():
 @app.route("/api/sendRequestNotification", methods=['POST'])
 def sendRequestNotification():
     if not request.is_json:
-        print("Request must be in JSON format")
         return jsonify({"error": "Request must be in JSON format"}), 400
     
     data = request.json
 
     if 'managerEmail' not in data or 'managerName' not in data or 'name' not in data or 'requestId' not in data or 'dates' not in data or 'type' not in data:
-        print("Missing 'email' or 'status' in request body")
-        return jsonify({"error": "Missing 'email' or 'status' in request body"}), 404
+        return jsonify({"error": "Missing information in request body"}), 404
     
     name = data['name']
     managerEmail = data['managerEmail']
@@ -128,8 +125,7 @@ def sendCancellationNotification():
     data = request.json
 
     if 'managerEmail' not in data or 'managerName' not in data or 'name' not in data or 'requestId' not in data or 'date' not in data or 'type' not in data:
-        print("Missing 'email' or 'status' in request body")
-        return jsonify({"error": "Missing 'email' or 'status' in request body"}), 404
+        return jsonify({"error": "Missing information in request body"}), 404
     
     name = data['name']
     managerEmail = data['managerEmail']
@@ -161,8 +157,7 @@ def sendAutomaticRejectionNotification():
     data = request.json
 
     if 'email' not in data or 'name' not in data or 'requestId' not in data or 'date' not in data or 'type' not in data:
-        print("Missing 'email' or 'status' in request body")
-        return jsonify({"error": "Missing 'email' or 'status' in request body"}), 404
+        return jsonify({"error": "Missing information in request body"}), 404
     
     email = data['email']
     name = data['name']

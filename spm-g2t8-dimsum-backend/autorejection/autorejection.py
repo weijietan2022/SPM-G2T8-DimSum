@@ -63,11 +63,22 @@ def update_requests():
         # Calculate the next Monday's date
         next_day = (current_date + timedelta(days=3)).strftime("%d %B %Y")
         print(next_day)
-        
 
+    elif current_day == 5:  # Saturday
+        # Calculate the next Monday's date
+        next_day = (current_date + timedelta(days=2)).strftime("%d %B %Y")
+        print(next_day)
+
+    elif current_day == 6:  # Sunday
+        # Calculate the next Monday's date
+        next_day = (current_date + timedelta(days=1)).strftime("%d %B %Y")
+        print(next_day)
 
     # Retrieve all the requests for that day that are PENDING
     relevant_requests = list(requests_collection.find({"Apply_Date": next_day, "Status": "Pending"}))
+
+    numberOfRequests = len(relevant_requests)
+    requestsUpdated = 0
 
     # Update the requests status to "Rejected"
     requests_collection.update_many(
@@ -107,8 +118,12 @@ def update_requests():
 
         if response.status_code == 200:
             print(f"Notification sent to {email} successfully.")
+            requestsUpdated += 1
         else:
             print(f"Failed to send notification to {email}.")
+
+    # Return a json response with the number of requests updated
+    return {"requestsUpdated": requestsUpdated, "totalRequests": numberOfRequests}
 
 
 if __name__ == "__main__":

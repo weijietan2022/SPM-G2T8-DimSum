@@ -1,22 +1,28 @@
 import unittest
-import json
 from schedule import app  # Adjust the import based on your app structure
 from pymongo import MongoClient
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 
 class TestGetScheduleAPI(unittest.TestCase):
     def setUp(self):
+
+        env_path = Path(__file__).resolve().parent / '.env'
+        load_dotenv(dotenv_path=env_path)
+
         self.app = app
         self.client = self.app.test_client()
         self.app.config['TESTING'] = True
         
         # Set up a MongoDB client to be used during tests
-        self.connection_string = "mongodb+srv://wxlum2022:WHG1u7Ziy7dqh8oo@assignment.9wecd.mongodb.net/"
+        self.connection_string = os.getenv('DB_CON_STRING')
         self.client_db = MongoClient(self.connection_string)
-        self.userDb = self.client_db['NewAssignment'] 
-        self.userCollection = self.userDb['NewAssignment']  
-        self.requestsDb = self.client_db['Arrangement']
-        self.requestsCollection = self.requestsDb['Arrangement']
+        self.userDb = self.client_db[os.getenv('DB_USERS')]
+        self.userCollection = self.userDb[os.getenv('COLLECTION_USERS')]
+        self.requestsDb = self.client_db[os.getenv('DB_ARRANGEMENT')]
+        self.requestsCollection = self.requestsDb[os.getenv('COLLECTION_ARRANGEMENT')]
     
     def tearDown(self):
         # Clean up MongoDB after tests
