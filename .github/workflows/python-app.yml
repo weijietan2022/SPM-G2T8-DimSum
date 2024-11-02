@@ -1,0 +1,56 @@
+name: Python application with Background Flask API
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Lint with flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Treat all other errors as warnings, allowing the build to continue
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Start Notification Service
+      run: |
+        nohup python spm-g2t8-dimsum-backend/notification/notification_service.py &
+        sleep 5  # Wait for the service to start
+
+    - name: Run integration tests
+      env:
+        NOTIFICATION_SERVICE_URL: http://localhost:5003  # URL of the Flask service
+      run: |
+        python spm-g2t8-dimsum-backend/login/login_integrationtests.py
+        python spm-g2t8-dimsum-backend/schedules/schedule_integrationtest.py
+        python spm-g2t8-dimsum-backend/notification/notification_integrationtests.py
+        python spm-g2t8-dimsum-backend/autorejection/autorejection_integrationtests.py
+        python spm-g2t8-dimsum-backend/ViewRequest/view_request_integrationtests.py
+
+    - name: Stop Notification Service
+      if: always()
+      run: |
+        pkill -f notification_service.py || echo "Notification service already stopped"
