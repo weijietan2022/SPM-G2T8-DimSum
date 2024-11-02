@@ -4,18 +4,22 @@ import { AuthContext } from '../context/AuthContext';
 
 const YourRequests = () => {
   const { staffId, dept, position } = useContext(AuthContext);
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [requests, setRequests] = useState([]); // To store the fetched requests
+  const [loading, setLoading] = useState(true); // To manage loading state
+  const [error, setError] = useState(null); // To handle any errors
+  const [statusFilter, setStatusFilter] = useState('All'); // Default to 'All'
   const [modalVisible, setModalVisible] = useState(false);
   const [reason, setReason] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
 
   const API_URL = import.meta.env.VITE_API_URL_5008;
 
+  // Fetch requests whenever statusFilter changes
   useEffect(() => {
     setError(null);
+    setLoading(true);
+    setRequests([]); // Clear requests before fetching new data
+
     fetch(`${API_URL}/api/view-request?status=${statusFilter}&dept=${dept}&staffId=${staffId}&position=${position}`, {
       method: 'GET',
       headers: {
@@ -27,6 +31,7 @@ const YourRequests = () => {
         return response.json();
       })
       .then(data => {
+        console.log('Fetched data:', data);
         setRequests(data);
         setLoading(false);
       })
@@ -34,7 +39,7 @@ const YourRequests = () => {
         setError(err.message);
         setLoading(false);
       });
-  }, [statusFilter]);
+  }, [statusFilter, dept, staffId, position, API_URL]);
 
   const handleReject = (request) => {
     setSelectedRequest(request);
@@ -96,6 +101,7 @@ const YourRequests = () => {
               : request
           )
         );
+
         if (newStatus === 'Approved') {
           fetch(`${API_URL}/api/approve-request`, {
             method: 'POST',
@@ -118,16 +124,20 @@ const YourRequests = () => {
       .catch(err => setError(err.message));
   };
 
+  // Show loading state
   if (loading) return <p>Loading requests...</p>;
+
+  // Show error message if there is an error
   if (error) return <p>Error: {error}</p>;
 
+  // Render the requests in a table once they are fetched
   return (
     <div className="main-div">
       <br />
       <select
         id="statusFilter"
         value={statusFilter}
-        className="select"
+        className='select'
         onChange={(e) => setStatusFilter(e.target.value)}
       >
         <option value="All">All</option>
@@ -142,13 +152,15 @@ const YourRequests = () => {
             <thead>
               <tr>
                 <th>Request ID</th>
+                <th>Staff ID</th>
                 <th>Staff Name</th>
-                {/* <th>Request Date</th> */}
+                <th>Request Date</th>
                 <th>Apply Date</th>
                 <th>Duration</th>
                 <th>Reason</th>
                 <th>Status</th>
-                {/* <th>Department</th> */}
+                <th>Department</th>
+                <th>Manager</th>
                 <th>File</th>
                 <th>Actions</th>
               </tr>
@@ -157,13 +169,15 @@ const YourRequests = () => {
               {requests.map(request => (
                 <tr key={request.Request_ID}>
                   <td>{request.Request_ID}</td>
+                  <td>{request.Staff_ID}</td>
                   <td>{request.name}</td>
-                  {/* <td>{new Date(request.Request_Date).toLocaleDateString()}</td> */}
+                  <td>{new Date(request.Request_Date).toLocaleDateString()}</td>
                   <td>{request.Apply_Date}</td>
                   <td>{request.Duration}</td>
                   <td>{request.Reason}</td>
                   <td>{request.Status}</td>
-                  {/* <td>{request.Department}</td> */}
+                  <td>{request.Department}</td>
+                  <td>{request.Manager_ID}</td>
                   <td>
                     {request.File ? (
                       <a href={`${API_URL}/api/files/${request.File}`} download>
@@ -174,24 +188,24 @@ const YourRequests = () => {
                     )}
                   </td>
                   <td>
-                    {request.Status === 'Pending' ? (
-                      <div className="action-buttons">
+                    <div className="action-buttons">
+                      {request.Status !== 'Approved' && (
                         <button
                           className="approve-button"
                           onClick={() => updateRequestStatus(request.Request_ID, 'Approved', request.Apply_Date, request.Duration)}
                         >
                           Approve
                         </button>
+                      )}
+                      {request.Status !== 'Rejected' && (
                         <button
                           className="reject-button"
                           onClick={() => handleReject(request)}
                         >
                           Reject
                         </button>
-                      </div>
-                    ) : (
-                      <span>Feature not implemented yet</span>
-                    )}
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -201,19 +215,19 @@ const YourRequests = () => {
             <div className="custom">
               <div className="custom-cont slide-down-animation">
                 <h3>Enter Rejection Reason</h3>
+                <br />
                 <form onSubmit={handleSubmit}>
                   <textarea
                     rows="5"
                     cols="50"
-                    className="text-area"
+                    style={{ borderRadius: '10px', border: '1px solid rgba(0, 0, 0, 0.2)' }}
                     placeholder="Reason for rejection"
                     value={reason}
                     onChange={(e) => setReason(e.target.value)}
                   />
-                  <div className="modal-buttons">
-                    <button type="submit" className="green-button">Submit</button>
-                    <button type="button" className="red-button" onClick={handleCloseModal}>Cancel</button>
-                  </div>
+                  <br />
+                  <button type="submit" className="green-button">Submit</button>
+                  <button type="button" className="red-button" onClick={handleCloseModal}>Cancel</button>
                 </form>
               </div>
             </div>
