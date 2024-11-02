@@ -112,14 +112,18 @@ class UnitTestViewRequest(unittest.TestCase):
                 "Staff_ID": 150869,
                 "Department": "HR",
                 "Position": "HR Manager",
-                "Status": "Pending"
+                "Status": "Pending",
+                "Duration": "Full Day",
+                "Apply_Date": "11 November 2024"
             },
             {
                 "_id": "507f1f77bcf86cd799439015",
                 "Staff_ID": 150870,
                 "Department": "Marketing",
                 "Position": "Marketing Specialist",
-                "Status": "Approved"
+                "Status": "Approved",
+                "Duration": "AM",
+                "Apply_Date": "12 November 2024"
             }
         ]
         
@@ -137,13 +141,26 @@ class UnitTestViewRequest(unittest.TestCase):
 
     # Test /api/update-request for approving a request
     @patch('view_request.collection.update_one')
-    def test_update_request_approve(self, mock_update_one):
+    @patch('view_request.collection.find_one')
+    def test_update_request_approve(self, mock_update_one, mock_find_one):
         # Mock update_one to return a modified count of 1, indicating success
         mock_update_one.return_value.modified_count = 1
+
+        mock_find_one.return_value = {
+            "_id": "507f1f77bcf86cd799439011",
+            "Staff_ID": 150866,
+            "Department": "Engineering",
+            "Position": "Manager",
+            "Status": "Pending",
+            "Duration": "Full Day",
+            "Apply_Date": "11 November 2024"
+        }
         
         response = self.app.post('/api/update-request', json={
             'requestId': '507f1f77bcf86cd799439011',
-            'status': 'Approved'
+            'status': 'Approved',
+            'date': '11 November 2024',
+            'duration': 'Full Day'
         })
         
         # Verify response status code is 200
@@ -155,13 +172,27 @@ class UnitTestViewRequest(unittest.TestCase):
 
     # Test /api/update-request for rejecting a request
     @patch('view_request.collection.update_one')
-    def test_update_request_reject(self, mock_update_one):
+    @patch('view_request.collection.find_one')
+    def test_update_request_reject(self, mock_update_one, mock_find_one):
         # Mock update_one to return a modified count of 1, indicating success
+        mock_find_one.return_value = {
+            "_id": "507f1f77bcf86cd799439011",
+            "Staff_ID": 150866,
+            "Department": "Engineering",
+            "Position": "Manager",
+            "Status": "Pending",
+            "Duration": "Full Day",
+            "Apply_Date": "11 November 2024"
+        }
+
         mock_update_one.return_value.modified_count = 1
+
         
         response = self.app.post('/api/update-request', json={
             'requestId': '507f1f77bcf86cd799439011',
-            'status': 'Rejected'
+            'status': 'Rejected',
+            'date': '11 November 2024',
+            'duration': 'Full Day'
         })
         
         # Verify response status code is 200
@@ -175,7 +206,9 @@ class UnitTestViewRequest(unittest.TestCase):
     def test_update_request_invalid_status(self):
         response = self.app.post('/api/update-request', json={
             'requestId': '507f1f77bcf86cd799439011',
-            'status': 'InvalidStatus'
+            'status': 'InvalidStatus',
+            'date': '11 November 2024',
+            'duration': 'Full Day'
         })
         
         # Verify response status code is 400 for invalid data

@@ -59,6 +59,9 @@ def getRequest():
     Position = request.args.get('position')  
     stat = request.args.get('status', 'Pending')
 
+    print("Received request with parameters:")
+    print(Dept, id, Position, stat)
+
     requests = ViewRequest(id, Position, Dept,stat)
 
     enriched_requests = []
@@ -87,6 +90,7 @@ def ViewRequest(id, Position, Dept, status):
 
     if "Manager" in Position or Position == "Director" or Position =='MD':
         listofids = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
+        print(listofids)
         if listofids:
             ids = [report["Staff_ID"] for report in listofids]
             query["Staff_ID"] = {"$in": ids}
@@ -115,6 +119,13 @@ def get_requests():
 
 @app.route('/api/update-request', methods=['POST'])
 def update_request_status():
+    if not request.is_json:
+        return jsonify({"error": "Request must be in JSON format"}), 400
+    
+    ## Check if the request body contains the required fields
+    if 'requestId' not in request.json or 'status' not in request.json or 'date' not in request.json or 'duration' not in request.json:
+        return jsonify({"error": "Missing information in request body"}), 400
+
     data = request.json
     request_id = data.get('requestId')
     new_status = data.get('status')
@@ -125,16 +136,24 @@ def update_request_status():
     if not request_id or new_status not in ['Approved', 'Rejected']:
         return jsonify({"error": "Invalid request data"}), 400
 
-    # Update the status in the database
-    result = collection.update_one(
-        {"Request_ID": request_id, "Apply_Date": date, "Duration": duration},
-        {"$set": {"Status": new_status}}
-    )
+    # Check if the request exists in the database
+    requestToUpdate = collection.find_one({"Request_ID": request_id, "Apply_Date": date, "Duration": duration})
+    if not requestToUpdate:
+        return jsonify({"error": "Request not found."}), 404
 
-    if result.modified_count == 1:
-        return jsonify({"message": f"Request {new_status} successfully."}), 200
-    else:
+    # Update the status in the database
+    try:
+        collection.update_one({"Request_ID": request_id, "Apply_Date": date, "Duration": duration}, {"$set": {"Status": new_status}})
+    except Exception as e:
+        print(f"Error updating request status: {str(e)}")
         return jsonify({"error": "Failed to update request status"}), 500
+    
+    return jsonify({"message": f"Request {new_status} successfully."}), 200
+
+    # if result.modified_count == 1:
+    #     return jsonify({"message": f"Request {new_status} successfully."}), 200
+    # else:
+    #     return jsonify({"error": "Failed to update request status"}), 500
     
 @app.route('/api/files/<file_id>', methods=['GET'])
 def download_file(file_id):
@@ -164,7 +183,8 @@ def reject_request():
     request_id = data.get('Request_ID')
     staff_id = data.get('Staff_ID')
     request_date = data.get('Request_Date')
-    request_date = datetime.fromisoformat(request_date) if isinstance(request_date, str) else request_date
+    # request_date = datetime.fromisoformat(request_date) if isinstance(request_date, str) else request_date
+    request_date = datetime.strptime(request_date, '%a, %d %b %Y %H:%M:%S %Z')
     apply_date = data.get('Apply_Date')
     duration = data.get('Duration')
     manager_id = data.get('Manager_ID')
@@ -271,7 +291,7 @@ def approve_request():
         }
         collection_approval.insert_one(Approved)
 
-        return jsonify({"Message": "Request is sent to the approval database"})
+        return jsonify({"message": "Request Approved successfully."}), 200
     
     except Exception as e:
                 print(f"There is an error: {str(e)}")

@@ -359,9 +359,6 @@ def get_rejection_reason():
 
     request_id = data.get('request_id')
     apply_date = data.get('apply_date')
-
-
-
     try:
         rejection_record = collection.find_one({"Request_ID": int(request_id), "Apply_Date": apply_date})
         if rejection_record:
@@ -370,7 +367,6 @@ def get_rejection_reason():
             return jsonify({"error": "Request not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
     
 
 if __name__ == '__main__':
