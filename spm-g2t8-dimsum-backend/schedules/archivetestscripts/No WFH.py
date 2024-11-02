@@ -10,5 +10,5 @@ client = MongoClient(connection_string)
 # Access the specific database
 db_arrangement = client['Arrangement']
 
-# Delete all documents
+# Delete all existing documents in the collection
 db_arrangement['Arrangement'].delete_many({})
