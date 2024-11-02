@@ -344,7 +344,32 @@ def withdraw_request():
                 return jsonify({"message": "Request not found or already withdrawn"}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+        
+@app.route('/api/getRejectionReason', methods=['POST'])
+def get_rejection_reason():
 
+    if not request.is_json:
+        return jsonify({"error": "Request must be in JSON format"}), 400
+
+    data = request.json
+
+    # Check if the request_id and apply_date are provided
+    if 'request_id' not in data or 'apply_date' not in data:
+        return jsonify({"error": "Missing 'request_id' or 'apply_date' in request body"}), 400
+
+    request_id = data.get('request_id')
+    apply_date = data.get('apply_date')
+
+
+
+    try:
+        rejection_record = collection.find_one({"Request_ID": int(request_id), "Apply_Date": apply_date})
+        if rejection_record:
+            return jsonify({"reason": rejection_record.get("Reason")}), 200
+        else:
+            return jsonify({"error": "Request not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     
 

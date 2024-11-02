@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Table, Dropdown, DropdownButton, Col, Row, Container } from 'react-bootstrap';
+import { Table, Dropdown, DropdownButton, Col, Row, Container, Modal, Button, Spinner } from 'react-bootstrap';
 import moment from 'moment-timezone';
 import '../css/viewApplication.css';
 import { AuthContext } from '../context/AuthContext';
@@ -8,6 +8,9 @@ const ViewApplication = () => {
   const [requests, setRequests] = useState([]);
   const [filter, setFilter] = useState('Pending');
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [loadingReason, setLoadingReason] = useState(false); // Loading state for the rejection reason
   const { staffId, managerId } = useContext(AuthContext);
   const API_URL = import.meta.env.VITE_API_URL_5002;
 
@@ -80,6 +83,39 @@ const ViewApplication = () => {
     }
   };
 
+  const handleRejectedClick = async (requestId, applyDate) => {
+    setLoadingReason(true);
+    setShowModal(true);
+    setRejectionReason(''); // Clear previous reason
+
+    try {
+      const response = await fetch(`${API_URL}/api/getRejectionReason`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ request_id: requestId, apply_date: applyDate }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch rejection reason.');
+      }
+
+      const data = await response.json();
+      setRejectionReason(data.reason);
+    } catch (error) {
+      console.error('Error fetching rejection reason:', error);
+      setRejectionReason('Failed to load rejection reason.');
+    } finally {
+      setLoadingReason(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setRejectionReason('');
+  };
+
   return (
     <Container fluid className="view-application" style={{ padding: '30px' }}>
       <h3 className="mb-4">View WFH Applications</h3>
@@ -124,17 +160,26 @@ const ViewApplication = () => {
                   <td>{request.Duration}</td>
                   <td>{request.Reason}</td>
                   <td>
-                    <span
-                      className={
-                        request.Status === 'Pending' ? 'status-pending' :
-                        request.Status === 'Approved' ? 'status-approved' :
-                        request.Status === 'Rejected' ? 'status-rejected' :
-                        request.Status === 'Withdrawn' ? 'status-withdrawn' :
-                        ''
-                      }
-                    >
-                      {request.Status}
-                    </span>
+                    {request.Status === 'Rejected' ? (
+                      <span
+                        className="status-rejected"
+                        onClick={() => handleRejectedClick(request.Request_ID, request.Apply_Date)}
+                        style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        {request.Status}
+                      </span>
+                    ) : (
+                      <span
+                        className={
+                          request.Status === 'Pending' ? 'status-pending' :
+                          request.Status === 'Approved' ? 'status-approved' :
+                          request.Status === 'Withdrawn' ? 'status-withdrawn' :
+                          ''
+                        }
+                      >
+                        {request.Status}
+                      </span>
+                    )}
                   </td>
                   <td>
                     {request.File ? (
@@ -146,14 +191,14 @@ const ViewApplication = () => {
                     )}
                   </td>
                   <td>
-                  {(request.Status === 'Pending' || request.Status === 'Approved') && (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date, request.Duration, request.Status, managerId, staffId)}
-                    >
-                      Cancel
-                    </button>
-                  )}
+                    {(request.Status === 'Pending' || request.Status === 'Approved') && (
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date, request.Duration, request.Status, managerId, staffId)}
+                      >
+                        Cancel
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -165,6 +210,28 @@ const ViewApplication = () => {
           </tbody>
         </Table>
       )}
+
+      {/* Modal for displaying rejection reason */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Rejection Reason</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {loadingReason ? (
+            <div className="text-center">
+              <Spinner animation="border" variant="primary" />
+              <p>Loading...</p>
+            </div>
+          ) : (
+            <p>{rejectionReason}</p>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
