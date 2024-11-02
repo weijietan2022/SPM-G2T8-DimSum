@@ -12,7 +12,6 @@ declare -A folder_scripts=(
 
 # Loop through each folder and execute the corresponding Python script
 for folder in "${!folder_scripts[@]}"; do
-    # Get the Python file to be executed for the current folder
     python_file="${folder}/${folder_scripts[$folder]}"
 
     # Check if there is an already running process for the same Python script
@@ -27,7 +26,7 @@ for folder in "${!folder_scripts[@]}"; do
     # Check if the Python file exists
     if [ -f "$python_file" ]; then
         echo "Running $python_file ..."
-        python3 "$python_file" &
+        nohup python3 "$python_file" > "${python_file}.log" 2>&1 &
     else
         echo "$python_file does not exist, skipping this folder."
     fi
