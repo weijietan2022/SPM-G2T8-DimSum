@@ -233,14 +233,17 @@ def process():
         manager_details = collection_new_assignment.find_one({"Staff_ID": manager_ID})
         manager_email = manager_details.get("Email")
         manager_name = manager_details.get("Staff_FName") + " " + manager_details.get("Staff_LName")
+        employee_details = collection_new_assignment.find_one({"Staff_ID": staff_ID})
+        employee_name = employee_details.get("Staff_FName") + " " + employee_details.get("Staff_LName")
     except Exception as e:
         print(f"Error fetching manager details: {e}")
         return jsonify({"status": "success", "message": "request inserted without notification"}), 200
+
     
     notification_URL = "http://127.0.0.1:5003/api/sendRequestNotification"
 
     notification_data = {
-        "name": manager_name,
+        "name": employee_name,
         "managerEmail": manager_email,
         "managerName": manager_name,
         "requestId": request_id,
