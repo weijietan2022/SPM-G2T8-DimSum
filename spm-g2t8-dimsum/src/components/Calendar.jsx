@@ -68,10 +68,16 @@ const handleNewRequest = () => {
   };
 
   const filterMembers = (members) => {
-    return members.filter((person) => 
-      person.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (departmentFilter === 'all' || person.department === departmentFilter)
-    );
+    const prioritizedMembers = members.filter(person => person.id === staffId);
+    const otherMembers = members.filter(person => person.id !== staffId);
+  
+    return [
+      ...prioritizedMembers,
+      ...otherMembers.filter((person) =>
+        person.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (departmentFilter === 'all' || person.department === departmentFilter)
+      ),
+    ];
   };
 
   const filteredWFH = filter === 'WFH' ? filterMembers(requestsData.wfh) : filter === 'office' ? [] : filterMembers(requestsData.wfh);

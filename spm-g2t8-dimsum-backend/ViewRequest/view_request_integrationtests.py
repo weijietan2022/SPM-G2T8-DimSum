@@ -112,7 +112,7 @@ class ViewRequestIntegrationTests(unittest.TestCase):
 
         response = self.app.post('/api/reject-request', 
                                  json={
-                                     "Request_ID": 1, "Apply_Date": "11 November 2024", "Duration": "Full Day", "rejectionReason": "Not enough information", "Manager_ID": 130002, "Staff_ID": 140001, "Request_Date": datetime.now()})   
+                                     "Request_ID": 1, "Apply_Date": "11 November 2024", "Duration": "Full Day", "rejectionReason": "Not enough information", "Manager_ID": 130002, "Staff_ID": 140001, "Request_Date":'2024-11-02T23:51:27.284000'})   
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, {"message": "Rejection submitted successfully"})
 

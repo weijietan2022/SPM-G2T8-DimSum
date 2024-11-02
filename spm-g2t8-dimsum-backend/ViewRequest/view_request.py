@@ -183,8 +183,8 @@ def reject_request():
     request_id = data.get('Request_ID')
     staff_id = data.get('Staff_ID')
     request_date = data.get('Request_Date')
-    # request_date = datetime.fromisoformat(request_date) if isinstance(request_date, str) else request_date
-    request_date = datetime.strptime(request_date, '%a, %d %b %Y %H:%M:%S %Z')
+    request_date = datetime.fromisoformat(request_date) if isinstance(request_date, str) else request_date
+    # request_date = datetime.strptime(request_date, '%a, %d %b %Y %H:%M:%S %Z')
     apply_date = data.get('Apply_Date')
     duration = data.get('Duration')
     manager_id = data.get('Manager_ID')

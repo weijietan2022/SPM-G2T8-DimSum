@@ -553,4 +553,7 @@ Staff_ID,Staff_FName,Staff_LName,Dept,Position,Country,Email,Reporting_Manager,R
 210042,Naron,Savoeun,IT,IT Team,Singapore,Naron.Savoeun@allinone.com.sg,210001,2
 210043,Phuc,Luon,IT,IT Team,Singapore,Phuc.Luon@allinone.com.sg,210001,2
 210044,Chandara,Tithe,IT,IT Team,Singapore,tithe.chandra@allinone.com.sg,210001,2
+999997,Test,Director,Testing,Testing,Singapore,aravindks.2022@scis.smu.edu.sg,130001,1
+999998,Test,Manager,Testing,Testing,Singapore,titans.aravind@gmail.com,999997,3
+999999,Test,Employee,Testing,Testing,Singapore,aravindsaravana0212@gmail.com,999998,2
 000000,System,System,Testing,Testing,Singapore,spmdimsum@gmail.com,0,1

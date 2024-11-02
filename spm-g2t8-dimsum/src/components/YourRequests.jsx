@@ -152,15 +152,15 @@ const YourRequests = () => {
             <thead>
               <tr>
                 <th>Request ID</th>
-                <th>Staff ID</th>
+                {/* <th>Staff ID</th> */}
                 <th>Staff Name</th>
-                <th>Request Date</th>
+                {/* <th>Request Date</th> */}
                 <th>Apply Date</th>
                 <th>Duration</th>
                 <th>Reason</th>
                 <th>Status</th>
-                <th>Department</th>
-                <th>Manager</th>
+                {/* <th>Department</th>
+                <th>Manager</th> */}
                 <th>File</th>
                 <th>Actions</th>
               </tr>
@@ -171,15 +171,15 @@ const YourRequests = () => {
                 .map(request => (
                   <tr key={request.Request_ID}>
                     <td>{request.Request_ID}</td>
-                    <td>{request.Staff_ID}</td>
+                    {/* <td>{request.Staff_ID}</td> */}
                     <td>{request.name}</td>
-                    <td>{new Date(request.Request_Date).toLocaleDateString()}</td>
+                    {/* <td>{new Date(request.Request_Date).toLocaleDateString()}</td> */}
                     <td>{request.Apply_Date}</td>
                     <td>{request.Duration}</td>
                     <td>{request.Reason}</td>
                     <td>{request.Status}</td>
-                    <td>{request.Department}</td>
-                    <td>{request.Manager_ID}</td>
+                    {/* <td>{request.Department}</td> */}
+                    {/* <td>{request.Manager_ID}</td> */}
                     <td>
                       {request.File ? (
                         <a href={`${API_URL}/api/files/${request.File}`} download>

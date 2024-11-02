@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request, flash, send_file
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timedelta
 import gridfs
 import json
 from dotenv import load_dotenv
@@ -152,6 +152,14 @@ def process():
         date = date_obj.strftime('%d %B %Y')
         duration = item['session']
 
+        ## Check if date is on the immediate next working day
+        if date == get_next_working_day():
+            return jsonify({"success": False, "message": "Cannot apply for WFH on the next working day."}), 400
+        
+        ## If date is today, cannot applt
+        if date == datetime.now().strftime('%d %B %Y'):
+            return jsonify({"success": False, "message": "Cannot apply for WFH on the same day."}), 400
+
         check_clash_query = {
             "Staff_ID": staff_ID,
             "Apply_Date": date,
@@ -247,6 +255,18 @@ def process():
 
     return jsonify({"status": "success", "message": "request inserted and manager notified"}), 200
 
+## Helper function
+def get_next_working_day():
+    today = datetime.now().date()
+    next_day = today + timedelta(days=1)
+    
+    # Skip weekends
+    if next_day.weekday() == 5:  # Saturday
+        next_day += timedelta(days=2)
+    elif next_day.weekday() == 6:  # Sunday
+        next_day += timedelta(days=1)
+    
+    return next_day.strftime('%d %B %Y')
 
 @app.route('/api/withdraw', methods=['POST'])
 def withdraw_request():

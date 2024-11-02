@@ -1,6 +1,7 @@
 .highlighted-row {
-  color: yellow;
-  background-color: yellow !important;
+  background-color: #a1a14b !important; /* Light yellow background */
+  font-weight: bold;
+  color: #cf1f1f;
 }
 
 .highlighted-cell {
