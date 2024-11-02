@@ -166,50 +166,54 @@ const YourRequests = () => {
               </tr>
             </thead>
             <tbody>
-              {requests.map(request => (
-                <tr key={request.Request_ID}>
-                  <td>{request.Request_ID}</td>
-                  <td>{request.Staff_ID}</td>
-                  <td>{request.name}</td>
-                  <td>{new Date(request.Request_Date).toLocaleDateString()}</td>
-                  <td>{request.Apply_Date}</td>
-                  <td>{request.Duration}</td>
-                  <td>{request.Reason}</td>
-                  <td>{request.Status}</td>
-                  <td>{request.Department}</td>
-                  <td>{request.Manager_ID}</td>
-                  <td>
-                    {request.File ? (
-                      <a href={`${API_URL}/api/files/${request.File}`} download>
-                        Download File
-                      </a>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      {request.Status !== 'Approved' && (
-                        <button
-                          className="approve-button"
-                          onClick={() => updateRequestStatus(request.Request_ID, 'Approved', request.Apply_Date, request.Duration)}
-                        >
-                          Approve
-                        </button>
+              {requests
+                .filter(request => request.Status !== 'Withdrawn') // Filter out requests with Status 'Withdraw'
+                .map(request => (
+                  <tr key={request.Request_ID}>
+                    <td>{request.Request_ID}</td>
+                    <td>{request.Staff_ID}</td>
+                    <td>{request.name}</td>
+                    <td>{new Date(request.Request_Date).toLocaleDateString()}</td>
+                    <td>{request.Apply_Date}</td>
+                    <td>{request.Duration}</td>
+                    <td>{request.Reason}</td>
+                    <td>{request.Status}</td>
+                    <td>{request.Department}</td>
+                    <td>{request.Manager_ID}</td>
+                    <td>
+                      {request.File ? (
+                        <a href={`${API_URL}/api/files/${request.File}`} download>
+                          Download File
+                        </a>
+                      ) : (
+                        '-'
                       )}
-                      {request.Status !== 'Rejected' && (
-                        <button
-                          className="reject-button"
-                          onClick={() => handleReject(request)}
-                        >
-                          Reject
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        {request.Status === 'Pending' && (
+                          <div>
+                            <button
+                              className="approve-button"
+                              onClick={() => updateRequestStatus(request.Request_ID, 'Approved', request.Apply_Date, request.Duration)}
+                            >
+                              Approve
+                            </button>
+
+                            <button
+                              className="reject-button"
+                              onClick={() => handleReject(request)}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
+
           </table>
           {modalVisible && (
             <div className="custom">
