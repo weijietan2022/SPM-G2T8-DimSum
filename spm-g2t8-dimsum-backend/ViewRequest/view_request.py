@@ -213,14 +213,10 @@ def reject_request():
         "Reject_Date_Time": datetime.now()
     }
 
-    ## Get manager email
-    managerObject = collection_new_assignment.find_one({"Staff_ID": manager_id})
-    managerEmail = managerObject.get("Email")
-
     Notification = {
             "requestId": request_id,
             "date": apply_date,
-            "email": managerEmail,
+            "email": email,
             "name": name, 
             "type": duration
         }
@@ -271,7 +267,7 @@ def approve_request():
         Notification = {
             "requestId": request_ID,
             "date": Apply_Date,
-            "email": "weenxiaang@gmail.com",
+            "email": email,
             "name": name, 
             "type": typeofreq
         }
