@@ -190,11 +190,14 @@ def process():
         
 
     request_id = get_next_sequence_value("request_id")
-
+    dates = []
+    types = []
     for item in cart_items:
         date_obj = datetime.strptime(item['date'], '%Y-%m-%d')
         date = date_obj.strftime('%d %B %Y')
+        dates.append(date)
         duration = item['session']
+        types.append(duration)
 
         request_data = {
             "Request_ID": request_id,
@@ -216,8 +219,33 @@ def process():
             print(f"Insert error: {e}")
             flash(f"Error in putting in DB")
             return jsonify({"status": "fail", "message": "Error inserting request into database."}), 401
+        
+    # Send notification to manager
+    try:
+        manager_details = collection_new_assignment.find_one({"Staff_ID": manager_ID})
+        manager_email = manager_details.get("Email")
+        manager_name = manager_details.get("Staff_FName") + " " + manager_details.get("Staff_LName")
+    except Exception as e:
+        print(f"Error fetching manager details: {e}")
+        return jsonify({"status": "success", "message": "request inserted without notification"}), 200
+    
+    notification_URL = "http://127.0.0.1:5003/api/sendRequestNotification"
 
-    return jsonify({"status": "success", "message": "request inserted"}), 200
+    notification_data = {
+        "name": manager_name,
+        "managerEmail": manager_email,
+        "managerName": manager_name,
+        "requestId": request_id,
+        "dates": dates,
+        "type": types
+    }
+
+    response = requests.post(notification_URL, json=notification_data)
+    if response.status_code != 200:
+        print(f"Failed to send notification: {response.json()}")
+        return jsonify({"status": "success", "message": "request inserted but manager notification failed"}), 200
+
+    return jsonify({"status": "success", "message": "request inserted and manager notified"}), 200
 
 
 @app.route('/api/withdraw', methods=['POST'])

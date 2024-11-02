@@ -99,13 +99,19 @@ def sendRequestNotification():
     managerName = data['managerName']
     dates = data['dates']
     requestId = data['requestId']
-    type = data['type']
+    types = data['type']
+
+    bodyE = f"Dear {managerName},\n\nA new WFH Request has been submitted by {name}. Please see details below:\n\nRequest ID: {requestId}\n"
+    for i in range(len(dates)):
+        bodyE += f"Date: {dates[i]}, Type: {types[i]}\n"
+
+    bodyE += "\nThis is an automated email from the system. Please do not reply. \n\nThank you."
 
     msg = Message(
         subject="New WFH Request from Employee",
         sender="spmdimsum@gmail.com",
         recipients=[managerEmail],
-        body=f"Dear {managerName},\n\nA new WFH Request has been submitted by {name}. Please see details below:\n\nRequest ID: {requestId}\nDates: {dates}\nType: {type}\n\nThis is an automated email from the system. Please do not reply. \n\nThank you.",
+        body=bodyE,
     )
 
     try:
