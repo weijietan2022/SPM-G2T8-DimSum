@@ -60,7 +60,6 @@ def getRequest():
     stat = request.args.get('status', 'Pending')
 
     requests = ViewRequest(id, Position, Dept,stat)
-    # print(f"Returning requests for status {stat}: {requests}")
 
     enriched_requests = []
     for req in requests:
@@ -85,10 +84,6 @@ def ViewRequest(id, Position, Dept, status):
 
     if status != 'All':
         query["Status"] = status
-
-    # if Position == 'MD':
-    #     requests = collection.find(query)
-
 
     if "Manager" in Position or Position == "Director" or Position =='MD':
         listofids = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
@@ -198,10 +193,14 @@ def reject_request():
         "Reject_Date_Time": datetime.now()
     }
 
+    ## Get manager email
+    managerObject = collection_new_assignment.find_one({"Staff_ID": manager_id})
+    managerEmail = managerObject.get("Email")
+
     Notification = {
             "requestId": request_id,
             "date": apply_date,
-            "email": "weenxiaang@gmail.com",
+            "email": managerEmail,
             "name": name, 
             "type": duration
         }

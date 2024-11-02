@@ -49,13 +49,13 @@ table tbody tr:nth-of-type(even) {
 }
 
 /* Hover effect */
-table tbody tr:hover {
+/* table tbody tr:hover {
   background-color: #f1f1f1;
 }
 
 table tbody tr:hover td {
   font-weight: bold;
-}
+} */
 
 /* Button container styling to keep buttons in one row */
 .action-buttons {

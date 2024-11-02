@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Table, Dropdown, DropdownButton, Form, InputGroup, Col, Row, Container } from 'react-bootstrap';
-import axios from 'axios';
+import { Table, Dropdown, DropdownButton, Col, Row, Container } from 'react-bootstrap';
 import moment from 'moment-timezone';
 import '../css/viewApplication.css';
 import { AuthContext } from '../context/AuthContext';
 
 const ViewApplication = () => {
   const [requests, setRequests] = useState([]);
-  const [filteredRequests, setFilteredRequests] = useState([]);
   const [filter, setFilter] = useState('Pending');
   const [loading, setLoading] = useState(true);
   const { staffId, managerId } = useContext(AuthContext);
@@ -16,8 +14,7 @@ const ViewApplication = () => {
   const fetchRequests = async () => {
     try {
       setLoading(true);
-      
-      const response = await fetch(`${API_URL}/api/requests?status=${filter}&staff_id=${staffId}`, {
+      const response = await fetch(`${API_URL}/api/requests?staff_id=${staffId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -36,35 +33,20 @@ const ViewApplication = () => {
       setLoading(false);
     }
   };
-  
 
-  // Handle filter logic
-  useEffect(() => {
-    let filtered = requests;
-
-    filtered = filtered.filter(request => request.Staff_ID === staffId);
-    
-    if (filter !== 'Pending') {
-      filtered = filtered.filter(request => request.Status === filter);
-    }
-
-    setFilteredRequests(filtered);
-  }, [filter, requests]);
-
-  // Fetch data on component mount
   useEffect(() => {
     fetchRequests();
-  }, [filter]);
+  }, []);
 
+  const filteredRequests = filter === 'All'
+    ? requests
+    : requests.filter(request => request.Status === filter);
 
   const handleCancelRequest = async (requestId, applyDate, duration, status, managerId, staffId) => {
-
     const confirmCancel = window.confirm("Are you sure you want to withdraw this request?");
     
     if (confirmCancel) {
       try {
-        const encodedApplyDate = encodeURIComponent(applyDate);
-  
         const response = await fetch(`${API_URL}/api/withdraw`, {
           method: 'POST',
           headers: {
@@ -87,7 +69,6 @@ const ViewApplication = () => {
             )
           );
           alert("Successfully withdrawn the request.");
-
           fetchRequests();
         } else {
           console.error('Failed to withdraw the request.');
@@ -99,9 +80,8 @@ const ViewApplication = () => {
     }
   };
 
-
   return (
-    <Container fluid className="view-application" style={{ padding: '50px' }}>
+    <Container fluid className="view-application" style={{ padding: '30px' }}>
       <h3 className="mb-4">View WFH Applications</h3>
 
       <Row className="mb-3">
@@ -111,6 +91,7 @@ const ViewApplication = () => {
             variant="secondary"
             onSelect={(selected) => setFilter(selected)}
           >
+            <Dropdown.Item eventKey="All">All</Dropdown.Item>
             <Dropdown.Item eventKey="Pending">Pending</Dropdown.Item>
             <Dropdown.Item eventKey="Approved">Approved</Dropdown.Item>
             <Dropdown.Item eventKey="Rejected">Rejected</Dropdown.Item>
@@ -122,32 +103,30 @@ const ViewApplication = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <Table striped bordered hover responsive className='table-cell-spacing'>
+        <Table striped bordered hover responsive className='custom-table'>
           <thead>
             <tr>
-              <th style={{ width: '8%', textAlign: 'center' }}>Request ID</th>
-              <th>Request Date</th>
-              <th>Apply Date</th>
+              <th style={{ width: '8%' }}>Request ID</th>
+              <th>Applied For</th>
               <th>Duration</th>
               <th>Reason</th>
               <th>Status</th>
               <th>File</th>
-              {(filter === 'Pending' || filter === 'Approved') && <th>Cancel</th>}
+              <th>Cancel</th>
             </tr>
           </thead>
           <tbody>
             {filteredRequests.length > 0 ? (
               filteredRequests.map((request, index) => (
                 <tr key={index}>
-                  <td style={{ textAlign: 'center', fontWeight: 'bold' }}>{request.Request_ID}</td>
-                  <td>{moment(request.Request_Date).format('YYYY-MM-DD')}</td>
-                  <td>{request.Apply_Date}</td>
+                  <td style={{ fontWeight: 'bold' }}>{request.Request_ID}</td>
+                  <td>{moment(request.Apply_Date).format('D MMMM YYYY')}</td>
                   <td>{request.Duration}</td>
                   <td>{request.Reason}</td>
-                  <td style={{  fontWeight: 'bold', }}>
+                  <td>
                     <span
                       className={
-                        request.Status == 'Pending' ? 'status-pending' :
+                        request.Status === 'Pending' ? 'status-pending' :
                         request.Status === 'Approved' ? 'status-approved' :
                         request.Status === 'Rejected' ? 'status-rejected' :
                         request.Status === 'Withdrawn' ? 'status-withdrawn' :
@@ -158,7 +137,7 @@ const ViewApplication = () => {
                     </span>
                   </td>
                   <td>
-                  {request.File ? (
+                    {request.File ? (
                       <a href={`${API_URL}/api/files/${request.File}`} download>
                         Download File
                       </a>
@@ -166,21 +145,21 @@ const ViewApplication = () => {
                       '-'
                     )}
                   </td>
+                  <td>
                   {(request.Status === 'Pending' || request.Status === 'Approved') && (
-                    <td>
-                      <button
-                        className="btn btn-danger"
-                        onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date, request.Duration, request.Status, managerId, staffId)}
-                      >
-                        Cancel
-                      </button>
-                    </td>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleCancelRequest(request.Request_ID, request.Apply_Date, request.Duration, request.Status, managerId, staffId)}
+                    >
+                      Cancel
+                    </button>
                   )}
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="8" className="text-center">No requests found.</td>
+                <td colSpan="7" className="text-center">No requests found.</td>
               </tr>
             )}
           </tbody>
