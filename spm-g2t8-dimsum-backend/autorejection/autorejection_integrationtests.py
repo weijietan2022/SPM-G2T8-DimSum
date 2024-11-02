@@ -1,36 +1,33 @@
 from datetime import datetime
 import unittest
-from autorejection import app
 import os
 from dotenv import load_dotenv
 from pathlib import Path
 import pymongo
+from autorejection import update_requests, RequestsDB, RejectionDB, UsersDB  # Adjust imports as needed
 
 class TestAutoRejectionModule(unittest.TestCase):
-    def setUp(self):
-        env_path = Path(__file__).resolve().parent / '.env'
+
+    @classmethod
+    def setUpClass(cls):
+        # Load environment variables for test database
+        env_path = Path(__file__).resolve().parent / '.env.test'
         load_dotenv(dotenv_path=env_path)
 
-        self.app = app
-        self.client = self.app.test_client()
-        self.app.config['TESTING'] = True
+        # Initialize MongoDB connection and databases
+        cls.connection_string = os.getenv('CONNECTION_STRING')
+        cls.client = pymongo.MongoClient(cls.connection_string)
+        cls.requests_db = RequestsDB()
+        cls.rejection_db = RejectionDB()
+        cls.users_db = UsersDB()
 
-        self.connection_string = os.getenv('CONNECTION_STRING')
-        client = pymongo.MongoClient(self.connection_string)
-        self.requests_db = client[os.getenv("DB_ARRANGEMENT")]
-        self.requests_collection = self.requests_db[os.getenv("COLLECTION_ARRANGEMENT")]
-        self.rejection_db = client[os.getenv("DB_REJECTION")]
-        self.rejection_collection = self.rejection_db[os.getenv("COLLECTION_REJECTION")]
-        self.users_db = client[os.getenv("DB_USERS")]
-        self.users_collection = self.users_db[os.getenv("COLLECTION_USERS")]
+    def setUp(self):
+        # Clear both the requests and rejection collections before each test
+        self.requests_db.collection.delete_many({})
+        self.rejection_db.collection.delete_many({})
 
-        # Clear both the requests and rejection collections
-
-        self.requests_collection.delete_many({})
-        self.rejection_collection.delete_many({})
-
-        # Add in 2 requests to the requests collection
-        self.requests_collection.insert_many([
+        # Add mock data to the requests collection
+        self.requests_db.collection.insert_many([
             {
                 "Request_ID": 1,
                 "Staff_ID": 999999,
@@ -40,7 +37,7 @@ class TestAutoRejectionModule(unittest.TestCase):
                 "Manager_ID": 999998,
                 "Reason": "No reason",
                 "Status": "Pending",
-                "File": ""
+                "File": None
             },
             {
                 "Request_ID": 2,
@@ -51,24 +48,39 @@ class TestAutoRejectionModule(unittest.TestCase):
                 "Manager_ID": 999998,
                 "Reason": "No reason",
                 "Status": "Pending",
-                "File": ""
+                "File": None
             },
         ])
-        
-        
+
+    def tearDown(self):
+        # Clear collections after each test to ensure isolation
+        self.requests_db.collection.delete_many({})
+        self.rejection_db.collection.delete_many({})
+
     def test_update_requests(self):
-        response = self.client.post('/update_requests')
-        ## Response data will have 2 fields - totalRequests and updatedRequests
-        data = response.get_json()
-        totalRequests = data['totalRequests']
-        updatedRequests = data['updatedRequests']
-        self.assertEqual(updatedRequests, 1)
-        self.assertEqual(totalRequests, 1)
+        # Run the function
+        result = update_requests(self.requests_db, self.rejection_db, self.users_db)
+        
+        # Validate results in result data
+        total_requests = result['totalRequests']
+        updated_requests = result['requestsUpdated']
+        self.assertEqual(updated_requests, 1)
+        self.assertEqual(total_requests, 1)
 
-        ## Get the number of requests in the rejection collection
-        rejection_count = self.rejection_collection.count_documents({})
-        self.assertEqual(rejection_count, updatedRequests)
+        # Validate the number of requests in the rejection collection matches updated requests
+        rejection_count = self.rejection_db.collection.count_documents({})
+        self.assertEqual(rejection_count, updated_requests)
 
+        # Verify that the rejection collection has specific records with the expected fields
+        rejected_request = self.rejection_db.collection.find_one({"Request_ID": 1})
+        self.assertIsNotNone(rejected_request)
+        self.assertEqual(rejected_request["Reason"], "Automated Rejection - The request was not approved or rejected prior to 24 hours before the request date.")
+        self.assertIn("Reject_Date_Time", rejected_request)  # Check that rejection timestamp is recorded
 
+        # Verify that the status of the rejected request in the requests collection is updated
+        updated_request = self.requests_db.collection.find_one({"Request_ID": 1})
+        self.assertIsNotNone(updated_request)
+        self.assertEqual(updated_request["Status"], "Rejected")
 
-
+if __name__ == '__main__':
+    unittest.main()
