@@ -10,20 +10,52 @@ load_dotenv(dotenv_path=env_path)
 
 
 # MongoDB connection setup
-connection_string = os.getenv("DB_CON_STRING")
-client = pymongo.MongoClient(connection_string)
-requests_db = client[os.getenv("DB_ARRANGEMENT")]
-requests_collection = requests_db[os.getenv("COLLECTION_ARRANGEMENT")]
+class RequestsDB:
+    def __init__(self):
+        connection_string = os.getenv("DB_CON_STRING")
+        client = pymongo.MongoClient(connection_string)
+        self.collection = client[os.getenv("DB_ARRANGEMENT")][os.getenv("COLLECTION_ARRANGEMENT")]
 
-rejection_db = client[os.getenv("DB_REJECTION")]
-rejection_collection = rejection_db[os.getenv("COLLECTION_REJECTION")]
+    def find_pending_requests(self, apply_date):
+        return list(self.collection.find({"Apply_Date": apply_date, "Status": "Pending"}))
 
-users_db = client[os.getenv("DB_USERS")]
-users_collection = users_db[os.getenv("COLLECTION_USERS")]
+    def reject_requests(self, apply_date):
+        self.collection.update_many(
+            {"Apply_Date": apply_date},
+            {"$set": {"Status": "Rejected"}}
+        )
 
 
-## Rejection Collection Class
-class Rejected_Request:
+class RejectionDB:
+    def __init__(self):
+        connection_string = os.getenv("DB_CON_STRING")
+        client = pymongo.MongoClient(connection_string)
+        self.collection = client[os.getenv("DB_REJECTION")][os.getenv("COLLECTION_REJECTION")]
+
+    def insert_rejected_request(self, rejected_request):
+        self.collection.insert_one({
+            "Request_ID": rejected_request.Request_id,
+            "Staff_ID": rejected_request.Staff_id,
+            "Request_Date": rejected_request.Request_date,
+            "Apply_Date": rejected_request.Apply_date,
+            "Duration": rejected_request.Duration,
+            "Manager_ID": rejected_request.Manager_id,
+            "Reason": rejected_request.Reason,
+            "Reject_Date_Time": rejected_request.Reject_date_time
+        })
+
+
+class UsersDB:
+    def __init__(self):
+        connection_string = os.getenv("DB_CON_STRING")
+        client = pymongo.MongoClient(connection_string)
+        self.collection = client[os.getenv("DB_USERS")][os.getenv("COLLECTION_USERS")]
+
+    def find_user_by_id(self, staff_id):
+        return self.collection.find_one({"Staff_ID": staff_id})
+
+
+class RejectedRequest:
     def __init__(self, request_id, staff_id, request_date, apply_date, duration, manager_id, reason, reject_date_time):
         self.Request_id = request_id
         self.Staff_id = staff_id
@@ -34,62 +66,31 @@ class Rejected_Request:
         self.Reason = reason
         self.Reject_date_time = reject_date_time
 
-    def insert_rejected_request(self):
-        rejection_collection.insert_one({
-            "Request_ID": self.Request_id,
-            "Staff_ID": self.Staff_id,
-            "Request_Date": self.Request_date,
-            "Apply_Date": self.Apply_date,
-            "Duration": self.Duration,
-            "Manager_ID": self.Manager_id,
-            "Reason": self.Reason,
-            "Reject_Date_Time": self.Reject_date_time
-        })
+    def insert(self, rejection_db):
+        rejection_db.insert_rejected_request(self)
 
 
-def update_requests():
-    # Get the current day of the week (0 = Monday, 4 = Friday)
+def update_requests(requests_db, rejection_db, users_db):
     current_day = datetime.now().weekday()
-
-    ## for now, simulate current date to be friday (yesterday)
     current_date = datetime.now()
 
-    if current_day in range(0, 4):  # Monday to Thursday (0-3)
-        # Retrieve all requests with a specific date and update their status to "rejected"
+    if current_day in range(0, 4):  # Monday to Thursday
         next_day = (current_date + timedelta(days=1)).strftime("%d %B %Y")
-        print(next_day)
-        
     elif current_day == 4:  # Friday
-        # Calculate the next Monday's date
         next_day = (current_date + timedelta(days=3)).strftime("%d %B %Y")
-        print(next_day)
-
     elif current_day == 5:  # Saturday
-        # Calculate the next Monday's date
         next_day = (current_date + timedelta(days=2)).strftime("%d %B %Y")
-        print(next_day)
-
     elif current_day == 6:  # Sunday
-        # Calculate the next Monday's date
         next_day = (current_date + timedelta(days=1)).strftime("%d %B %Y")
-        print(next_day)
 
-    # Retrieve all the requests for that day that are PENDING
-    relevant_requests = list(requests_collection.find({"Apply_Date": next_day, "Status": "Pending"}))
+    relevant_requests = requests_db.find_pending_requests(next_day)
+    requests_db.reject_requests(next_day)
 
     numberOfRequests = len(relevant_requests)
     requestsUpdated = 0
 
-    # Update the requests status to "Rejected"
-    requests_collection.update_many(
-        {"Apply_Date": next_day},
-        {"$set": {"Status": "Rejected"}}
-    )
-
-    # Insert the rejected requests into the rejected collection
-    # And send a notification to the staff
     for request in relevant_requests:
-        rejected_request = Rejected_Request(
+        rejected_request = RejectedRequest(
             request["Request_ID"],
             request["Staff_ID"],
             request["Request_Date"],
@@ -99,15 +100,12 @@ def update_requests():
             "Automated Rejection - The request was not approved or rejected prior to 24 hours before the request date.",
             datetime.now()
         )
+        rejected_request.insert(rejection_db)
 
-        rejected_request.insert_rejected_request()
-
-        # Retrieve the staff's email
-        staff = users_collection.find_one({"Staff_ID": request["Staff_ID"]})
+        staff = users_db.find_user_by_id(request["Staff_ID"])
         email = staff["Email"]
         fullName = staff["Staff_FName"] + " " + staff["Staff_LName"]
 
-        # Send notification to the staff
         response = requests.post("http://localhost:5003/api/sendAutomaticRejectionNotification", json={
             "email": email,
             "name": fullName,
@@ -122,9 +120,11 @@ def update_requests():
         else:
             print(f"Failed to send notification to {email}.")
 
-    # Return a json response with the number of requests updated
     return {"requestsUpdated": requestsUpdated, "totalRequests": numberOfRequests}
 
 
 if __name__ == "__main__":
-    update_requests()
+    requests_db = RequestsDB()
+    rejection_db = RejectionDB()
+    users_db = UsersDB()
+    update_requests(requests_db, rejection_db, users_db)

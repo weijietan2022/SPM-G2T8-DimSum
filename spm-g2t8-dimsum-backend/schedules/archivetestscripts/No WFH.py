@@ -12,3 +12,11 @@ db_arrangement = client['Arrangement']
 
 # Delete all existing documents in the collection
 db_arrangement['Arrangement'].delete_many({})
+
+# Delete all from Rejection collection
+db_rejection = client['Rejection']
+db_rejection['Rejection'].delete_many({})
+
+# Delete all from the approval collection
+db_approval = client['Approval']
+db_approval['Approval'].delete_many({})
