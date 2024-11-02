@@ -10,9 +10,10 @@ client = MongoClient(connection_string)
 # Access the specific database
 db_arrangement = client['Arrangement']
 
+# Delete all existing WFH requests in the collection, on specific test date to prepare database state for testing
 result = db_arrangement['Arrangement'].delete_many({"Apply_Date": "11 November 2024"})
 
-# Insert a sample document into the collection using datetime objects
+# Insertion of sample WFH request, in the form of a document, into the collection 
 apply_request_data_1 = {
     "Request_ID": 1002,
     "Staff_ID": 210029,
@@ -33,7 +34,7 @@ except Exception as e:
     print(f"Insert error: {e}")
 
 
-# Insert a sample document into the collection using datetime objects
+# Insertion of sample WFH request, in the form of a document, into the collection 
 apply_request_data_2 = {
     "Request_ID": 1004,
     "Staff_ID": 210042,
@@ -52,7 +53,8 @@ try:
     print("Sample document inserted.")
 except Exception as e:
     print(f"Insert error: {e}")
-
+    
+# Insertion of sample WFH request, in the form of a document, into the collection 
 apply_request_data_3 = {
     "Request_ID": 1053,
     "Staff_ID": 210043,
@@ -71,7 +73,8 @@ try:
     print("Sample document inserted.")
 except Exception as e:
     print(f"Insert error: {e}")
-
+    
+# Insertion of sample WFH request, in the form of a document, into the collection 
 apply_request_data_4 = {
     "Request_ID": 1063,
     "Staff_ID": 210041,
