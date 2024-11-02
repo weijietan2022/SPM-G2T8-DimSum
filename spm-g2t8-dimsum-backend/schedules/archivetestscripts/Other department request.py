@@ -10,7 +10,10 @@ client = MongoClient(connection_string)
 # Access the specific database
 db_arrangement = client['Arrangement']
 
+# Delete all existing WFH requests in the collection, on specific test date to prepare database state for testing
 result = db_arrangement['Arrangement'].delete_many({"Apply_Date": "11 November 2024"})
+
+# Insertion of sample WFH request, in the form of a document, into the collection 
 apply_request_data_1 = {
     "Request_ID": 100001,
     "Staff_ID": 150566,
