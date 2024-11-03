@@ -98,16 +98,6 @@ class ApplicationFormTests(unittest.TestCase):
             "File": 'file_id_123'
         }
         mock_insert_one.assert_called_once_with(expected_request_data)
-
-        # Verify that send_notification was called with the correct data
-        expected_notification_data = {
-            "name": "EmployeeFirst EmployeeLast",
-            "managerEmail": "manager@example.com",
-            "managerName": "ManagerFirst ManagerLast",
-            "requestId": 999,
-            "dates": ["15 November 2024"],
-            "type": ["Full Day"]
-        }
         
         ## Just check that notif was called
         mock_send_notification.assert_called_once()
@@ -170,14 +160,7 @@ class ApplicationFormTests(unittest.TestCase):
             {"$set": {"Status": "Withdrawn"}}
         )
         # Verify that send_cancel_notification was called with correct data
-        expected_notification_details = {
-            "name": "EmployeeFirst EmployeeLast",
-            "managerEmail": "manager@example.com",
-            "managerName": "ManagerFirst ManagerLast",
-            "requestId": "123",
-            "date": "2024-11-15",
-            "type": "Full Day"
-        }
+        
         mock_send_notification.assert_called_once
 
     @patch('application_form.collection.update_one')  # Mock update_one in the collection
