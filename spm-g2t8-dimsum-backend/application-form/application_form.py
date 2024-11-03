@@ -15,29 +15,58 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, methods=['GET', 'POST', 'PUT'
 
 env_path = Path(__file__).resolve().parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
-
 app.secret_key = os.getenv("SECRET_KEY")
 
-# MongoDB connection
-connection_string = os.getenv("DB_CON_STRING")
-client = MongoClient(connection_string)
+# MongoDB initialization helpers
+def init_mongo_client():
+    """Initialize MongoDB client using connection string from environment variables."""
+    connection_string = os.getenv("DB_CON_STRING")
+    return MongoClient(connection_string)
 
-db_new_assignment = client[os.getenv("DB_USERS")]
-collection_new_assignment = db_new_assignment[os.getenv("COLLECTION_USERS")]
+def get_db(client, db_name_env_var):
+    """Get a database instance based on environment variable name."""
+    return client[os.getenv(db_name_env_var)]
 
-db_arrangement = client[os.getenv("DB_ARRANGEMENT")]
-collection = db_arrangement[os.getenv("COLLECTION_ARRANGEMENT")]
+def get_collection(db, collection_name_env_var):
+    """Get a collection from a specified database based on environment variable name."""
+    return db[os.getenv(collection_name_env_var)]
 
-file_storage = client['file_storage']
-fs = gridfs.GridFS(file_storage)
+def get_fs(client):
+    """Get a GridFS instance based on environment variable name."""
+    return gridfs.GridFS(client['file_storage'])
+
+def get_counters_collection(db):
+    """Get the 'counters' collection from a specified database."""
+    return db['counters']
+
+
+# Initialize MongoDB client and collections
+client = init_mongo_client()
+
+db_new_assignment = get_db(client, "DB_USERS")
+collection_new_assignment = get_collection(db_new_assignment, "COLLECTION_USERS")
+
+db_arrangement = get_db(client, "DB_ARRANGEMENT")
+collection = get_collection(db_arrangement, "COLLECTION_ARRANGEMENT")
+
+db_rejection = get_db(client, "DB_REJECTION")
+collection_rejection = get_collection(db_rejection, "COLLECTION_REJECTION")
+
+
+# file_storage = client['file_storage']
+# fs = gridfs.GridFS(file_storage)
+fs = get_fs(client)
+
 
 def get_next_sequence_value(sequence_name):
-    result = db_arrangement['counters'].find_one_and_update(
+    """Get the next value of a sequence from the 'counters' collection."""
+    counters_collection = get_counters_collection(db_arrangement)
+    sequence_document = counters_collection.find_one_and_update(
         {"_id": sequence_name},
         {"$inc": {"sequence_value": 1}},
         return_document=True
     )
-    return result['sequence_value']
+    return sequence_document["sequence_value"]
 
 
 def serialize_data(data):
@@ -65,11 +94,15 @@ def get_requests():
         if staff_id:
             query['Staff_ID'] = int(staff_id)
 
-        print(f"Query: {query}")
+        # print(f"Query: {query}")
 
         results = list(collection.find(query).sort("Request_Date", -1))
+        # results = list(collection.find(query))
 
         serialized_results = []
+
+        # print("Look here")
+        # print(results)
         for result in results:
             serialized_result = serialize_data(result)
             
@@ -77,7 +110,7 @@ def get_requests():
                 serialized_result['File'] = str(result['File'])
             
             serialized_results.append(serialized_result)
-        print(serialized_results)
+        # print(serialized_results)
 
         return jsonify(serialized_results), 200
     except Exception as e:
@@ -178,7 +211,7 @@ def process():
             check_clash_query["$or"].append({"Duration": "PM", "Status": {"$in": ["Approved", "Pending"]}})
             check_clash_query["$or"].append({"Duration": "Full Day", "Status": {"$in": ["Approved", "Pending"]}})
 
-        existing_record = db_arrangement["Arrangement"].find_one(check_clash_query)
+        existing_record = collection.find_one(check_clash_query)
 
         if existing_record:    
             clashing_records.append(existing_record)
@@ -193,6 +226,9 @@ def process():
             clash_string = f"Clash found for {clash_date} with duration {clash_duration}."
             if clash_string not in clash_messages:
                 clash_messages.append(clash_string)
+
+        print("Clash messages:")
+        print(clash_messages)
 
         return jsonify({"success": False, "message": clash_messages}), 400
         
@@ -220,7 +256,7 @@ def process():
         }
 
         try:
-            db_arrangement['Arrangement'].insert_one(request_data)
+            collection.insert_one(request_data)
             print("request inserted.")
             
         except Exception as e:
@@ -235,10 +271,10 @@ def process():
         manager_name = manager_details.get("Staff_FName") + " " + manager_details.get("Staff_LName")
         employee_details = collection_new_assignment.find_one({"Staff_ID": staff_ID})
         employee_name = employee_details.get("Staff_FName") + " " + employee_details.get("Staff_LName")
+        print("Manager details:")
     except Exception as e:
         print(f"Error fetching manager details: {e}")
         return jsonify({"status": "success", "message": "request inserted without notification"}), 200
-
     
     notification_URL = "http://127.0.0.1:5003/api/sendRequestNotification"
 
@@ -251,12 +287,30 @@ def process():
         "type": types
     }
 
-    response = requests.post(notification_URL, json=notification_data)
-    if response.status_code != 200:
-        print(f"Failed to send notification: {response.json()}")
+    if not send_notification(employee_name, manager_email, manager_name, request_id, dates, types):
+        # print(f"Failed to send notification: {response.json()}")
         return jsonify({"status": "success", "message": "request inserted but manager notification failed"}), 200
 
     return jsonify({"status": "success", "message": "request inserted and manager notified"}), 200
+
+def send_notification(employee_name, manager_email, manager_name, request_id, dates, types):
+    """Helper function to send notification to the manager."""
+    notification_URL = "http://127.0.0.1:5003/api/sendRequestNotification"
+    notification_data = {
+        "name": employee_name,
+        "managerEmail": manager_email,
+        "managerName": manager_name,
+        "requestId": request_id,
+        "dates": dates,
+        "type": types
+    }
+
+    response = requests.post(notification_URL, json=notification_data)
+    if response.status_code != 200:
+        print(f"Failed to send notification: {response.json()}")
+        return False
+    return True
+
 
 ## Helper function
 def get_next_working_day():
@@ -305,9 +359,9 @@ def withdraw_request():
                 print(f"There is an error: {str(e)}")
                 return jsonify({"error": "An error occurred", "details": str(e)}), 500
         
-        notification_URL = "http://127.0.0.1:5003/api/sendCancellationNotification"
+        # notification_URL = "http://127.0.0.1:5003/api/sendCancellationNotification"
 
-        Notification = {
+        notification_details = {
             "name": emp_name,
             "managerEmail": "calebyap0@gmail.com",
             "managerName": manager_name,
@@ -336,16 +390,17 @@ def withdraw_request():
             )
             
             if result.modified_count > 0:
-                Notifresponse = requests.post(notification_URL, json=Notification)
-                if Notifresponse.status_code == 200:
-                    print("Notification sent successfully.")
+                Notifresponse = send_cancel_notification(notification_details)
+                if Notifresponse:
+                    print("Withdrawal Notification sent successfully.")
                 else:
                     print(f"Failed to send notification: {Notifresponse.json()}")
                 return jsonify({"message": "Request successfully withdrawn"}), 200
             else:
-                return jsonify({"message": "Request not found or already withdrawn"}), 404
+                return jsonify({"message": "Failed to update database"}), 404
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            print(f"There is an error: {str(e)}")
+            return jsonify({"error": "No such document in the database"}), 404
         
     else:
         try:
@@ -366,7 +421,34 @@ def withdraw_request():
             else:
                 return jsonify({"message": "Request not found or already withdrawn"}), 404
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            print(f"There is an error: {str(e)}")
+            return jsonify({"error": "No such document in the database"}), 404
+        
+def send_cancel_notification(notification_data):
+    """Helper function to send notification to the manager."""
+    notification_URL = "http://127.0.0.1:5003/api/sendCancellationNotification"
+
+    employee_name = notification_data.get("name")   
+    manager_email = notification_data.get("managerEmail")
+    manager_name = notification_data.get("managerName")
+    request_id = notification_data.get("requestId")
+    date = notification_data.get("date")
+    type = notification_data.get("type")
+
+    notification_data = {
+        "name": employee_name,
+        "managerEmail": manager_email,
+        "managerName": manager_name,
+        "requestId": request_id,
+        "date": date,
+        "type": type
+    }  
+
+    response = requests.post(notification_URL, json=notification_data)
+    if response.status_code != 200:
+        # print(f"Failed to send notification: {response.json()}")
+        return False
+    return True
         
 @app.route('/api/getRejectionReason', methods=['POST'])
 def get_rejection_reason():
@@ -383,7 +465,7 @@ def get_rejection_reason():
     request_id = data.get('request_id')
     apply_date = data.get('apply_date')
     try:
-        rejection_record = collection.find_one({"Request_ID": int(request_id), "Apply_Date": apply_date})
+        rejection_record = collection_rejection.find_one({"Request_ID": int(request_id), "Apply_Date": apply_date})
         if rejection_record:
             return jsonify({"reason": rejection_record.get("Reason")}), 200
         else:
