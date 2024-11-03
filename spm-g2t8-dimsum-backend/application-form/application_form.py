@@ -159,7 +159,13 @@ def process():
     print("This is the file")
     print(file)
 
-    if not cart or not reason:
+    print("This is the cart")
+    print(cart)
+
+    print("This is the reason")
+    print(reason)
+
+    if not cart or not reason or not staff_ID or not manager_ID:
         return jsonify({"status": "fail", "message": "Missing required fields."}), 400
     
     try:

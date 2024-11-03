@@ -51,6 +51,7 @@ jobs:
         python spm-g2t8-dimsum-backend/notification/notification_integrationtests.py
         python spm-g2t8-dimsum-backend/autorejection/autorejection_integrationtests.py
         python spm-g2t8-dimsum-backend/ViewRequest/view_request_integrationtests.py
+        python spm-g2t8-dimsum-backend/application_form/application_form_integrationtests.py
 
     - name: Stop Notification Service
       if: always()
