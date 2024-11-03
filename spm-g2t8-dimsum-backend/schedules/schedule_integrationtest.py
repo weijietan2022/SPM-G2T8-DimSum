@@ -79,7 +79,6 @@ class TestGetScheduleAPI(unittest.TestCase):
 
             try:
                 self.requestsCollection.insert_one(apply_request_data)
-                print("Sample document inserted.")
             except Exception as e:
                 print(f"Insert error: {e}")
             i=i+1
@@ -261,7 +260,6 @@ class TestGetScheduleAPI(unittest.TestCase):
 
         ## Test response from one of the team members
         response = self.client.post('/api/getSchedule', json={"uid": 210017, "date": "2024-11-11"})
-        print(response.json)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json, sample_response_data)
         self.assertEqual(len(response.json["wfh"]), 28)
@@ -477,7 +475,6 @@ class TestGetScheduleAPI(unittest.TestCase):
 
             try:
                 self.requestsCollection.insert_one(apply_request_data)
-                print("Sample document inserted.")
             except Exception as e:
                 print(f"Insert error: {e}")
 
