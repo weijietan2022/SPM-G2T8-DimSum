@@ -115,11 +115,9 @@ def update_requests(requests_db, rejection_db, users_db):
         })
 
         if response.status_code == 200:
-            print(f"Notification sent to {email} successfully.")
             requestsUpdated += 1
         else:
-            print(f"Failed to send notification to {email}.")
-
+            print("Failed to send email to " + email)
     return {"requestsUpdated": requestsUpdated, "totalRequests": numberOfRequests}
 
 

@@ -30,8 +30,6 @@ class NotificationTest(unittest.TestCase):
             "type": "Full Day"
         })
 
-        print("Email request sent")
-
         data = response.get_json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['message'], "Email sent successfully")

@@ -94,15 +94,10 @@ def get_requests():
         if staff_id:
             query['Staff_ID'] = int(staff_id)
 
-        # print(f"Query: {query}")
-
         results = list(collection.find(query).sort("Request_Date", -1))
-        # results = list(collection.find(query))
 
         serialized_results = []
 
-        # print("Look here")
-        # print(results)
         for result in results:
             serialized_result = serialize_data(result)
             
@@ -110,11 +105,9 @@ def get_requests():
                 serialized_result['File'] = str(result['File'])
             
             serialized_results.append(serialized_result)
-        # print(serialized_results)
 
         return jsonify(serialized_results), 200
     except Exception as e:
-        print(f"Error fetching requests: {str(e)}")
         return jsonify({"error": "Failed to fetch requests", "details": str(e)}), 500
 
 
@@ -124,9 +117,7 @@ def get_requests():
 
 @app.route('/api/files/<file_id>', methods=['GET'])
 def download_file(file_id):
-    try:
-        print(f"Received file ID: {file_id}")
-        
+    try:        
         if not ObjectId.is_valid(file_id):
             return jsonify({"error": "Invalid file ID"}), 400
         
@@ -135,11 +126,9 @@ def download_file(file_id):
         return send_file(file, download_name=file.filename, as_attachment=True)
     
     except gridfs.errors.NoFile:
-        print(f"No file found with ID: {file_id}")
         return jsonify({"error": "File not found"}), 404
     
     except Exception as e:
-        print(f"Error downloading file: {str(e)}")
         return jsonify({"error": "An error occurred", "details": str(e)}), 500
 
 
@@ -155,15 +144,6 @@ def process():
     file = request.files.get('attachment')
     staff_ID = int(request.form.get('staffId'))
     manager_ID = int(request.form.get('managerId'))
-
-    print("This is the file")
-    print(file)
-
-    print("This is the cart")
-    print(cart)
-
-    print("This is the reason")
-    print(reason)
 
     if not cart or not reason or not staff_ID or not manager_ID:
         return jsonify({"status": "fail", "message": "Missing required fields."}), 400
@@ -187,7 +167,6 @@ def process():
 
     for item in cart_items:
         date_obj = datetime.strptime(item['date'], '%Y-%m-%d')
-        print(date_obj)
         date = date_obj.strftime('%d %B %Y')
         duration = item['session']
 
@@ -221,7 +200,6 @@ def process():
 
         if existing_record:    
             clashing_records.append(existing_record)
-            print(existing_record)
 
     # If any clash records exist, prepare a message
     if clashing_records:
@@ -232,9 +210,6 @@ def process():
             clash_string = f"Clash found for {clash_date} with duration {clash_duration}."
             if clash_string not in clash_messages:
                 clash_messages.append(clash_string)
-
-        print("Clash messages:")
-        print(clash_messages)
 
         return jsonify({"success": False, "message": clash_messages}), 400
         
@@ -263,10 +238,8 @@ def process():
 
         try:
             collection.insert_one(request_data)
-            print("request inserted.")
             
         except Exception as e:
-            print(f"Insert error: {e}")
             flash(f"Error in putting in DB")
             return jsonify({"status": "fail", "message": "Error inserting request into database."}), 401
         
@@ -277,24 +250,10 @@ def process():
         manager_name = manager_details.get("Staff_FName") + " " + manager_details.get("Staff_LName")
         employee_details = collection_new_assignment.find_one({"Staff_ID": staff_ID})
         employee_name = employee_details.get("Staff_FName") + " " + employee_details.get("Staff_LName")
-        print("Manager details:")
     except Exception as e:
-        print(f"Error fetching manager details: {e}")
         return jsonify({"status": "success", "message": "request inserted without notification"}), 200
-    
-    notification_URL = "http://127.0.0.1:5003/api/sendRequestNotification"
-
-    notification_data = {
-        "name": employee_name,
-        "managerEmail": manager_email,
-        "managerName": manager_name,
-        "requestId": request_id,
-        "dates": dates,
-        "type": types
-    }
 
     if not send_notification(employee_name, manager_email, manager_name, request_id, dates, types):
-        # print(f"Failed to send notification: {response.json()}")
         return jsonify({"status": "success", "message": "request inserted but manager notification failed"}), 200
 
     return jsonify({"status": "success", "message": "request inserted and manager notified"}), 200
@@ -313,7 +272,6 @@ def send_notification(employee_name, manager_email, manager_name, request_id, da
 
     response = requests.post(notification_URL, json=notification_data)
     if response.status_code != 200:
-        print(f"Failed to send notification: {response.json()}")
         return False
     return True
 
@@ -348,10 +306,7 @@ def withdraw_request():
             manager_fname = ManagerDetails.get("Staff_FName")
             manager_lname = ManagerDetails.get("Staff_LName")
             manager_name = manager_fname + " " + manager_lname
-            print("heyhey")
-            print(manager_name)
         except Exception as e:
-                print(f"There is an error: {str(e)}")
                 return jsonify({"error": "An error occurred", "details": str(e)}), 500  
 
         try:
@@ -359,14 +314,9 @@ def withdraw_request():
             emp_fname = EmployeeDetails.get("Staff_FName")
             emp_lname = EmployeeDetails.get("Staff_LName")
             emp_name = emp_fname + " " + emp_lname
-            print("heyhey2")
-            print(emp_name)
         except Exception as e:
-                print(f"There is an error: {str(e)}")
                 return jsonify({"error": "An error occurred", "details": str(e)}), 500
-        
-        # notification_URL = "http://127.0.0.1:5003/api/sendCancellationNotification"
-
+    
         notification_details = {
             "name": emp_name,
             "managerEmail": "calebyap0@gmail.com",
@@ -377,12 +327,6 @@ def withdraw_request():
         } 
 
         try:
-            print("trying to update database")
-            print(request_id)
-            print(type(request_id))
-            print(apply_date)
-            print(type(apply_date))
-
             result = collection.update_one(
                 {
                     "Request_ID": int(request_id),
@@ -405,7 +349,6 @@ def withdraw_request():
             else:
                 return jsonify({"message": "Failed to update database"}), 404
         except Exception as e:
-            print(f"There is an error: {str(e)}")
             return jsonify({"error": "No such document in the database"}), 404
         
     else:
@@ -427,7 +370,6 @@ def withdraw_request():
             else:
                 return jsonify({"message": "Request not found or already withdrawn"}), 404
         except Exception as e:
-            print(f"There is an error: {str(e)}")
             return jsonify({"error": "No such document in the database"}), 404
         
 def send_cancel_notification(notification_data):
@@ -452,7 +394,6 @@ def send_cancel_notification(notification_data):
 
     response = requests.post(notification_URL, json=notification_data)
     if response.status_code != 200:
-        # print(f"Failed to send notification: {response.json()}")
         return False
     return True
         

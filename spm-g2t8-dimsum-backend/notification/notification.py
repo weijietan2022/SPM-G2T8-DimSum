@@ -45,7 +45,6 @@ def sendNotification():
         mail.send(msg)
         return jsonify({"message": "Email sent successfully"}), 200
     except smtplib.SMTPException as e:
-        print(f"Failed to send email: {e}")
         return jsonify({"error": "Failed to send email", "details": str(e)}), 500
 
 
@@ -53,7 +52,6 @@ def sendNotification():
 @app.route("/api/sendRejectionNotification", methods=['POST'])
 def sendRejectionNotification():
 
-    print("Triggered")
     if not request.is_json:
         return jsonify({"error": "Request must be in JSON format"}), 400
     
@@ -68,7 +66,6 @@ def sendRejectionNotification():
     date = data['date']
     type = data['type']
     
-    print("Checks complete. ")
     msg = Message(
         subject="Outcome of WFH Request",
         sender="spmdimsum@gmail.com",
@@ -80,7 +77,6 @@ def sendRejectionNotification():
         mail.send(msg)
         return jsonify({"message": "Email sent successfully"}), 200
     except smtplib.SMTPException as e:
-        print(f"Failed to send email: {e}")
         return jsonify({"error": "Failed to send email", "details": str(e)}), 500
     
 
@@ -118,14 +114,12 @@ def sendRequestNotification():
         mail.send(msg)
         return jsonify({"message": "Email sent successfully"}), 200
     except smtplib.SMTPException as e:
-        print(f"Failed to send email: {e}")
         return jsonify({"error": "Failed to send email", "details": str(e)}), 500
 
     
 @app.route("/api/sendCancellationNotification", methods=['POST'])
 def sendCancellationNotification():
     if not request.is_json:
-        print("Request must be in JSON format")
         return jsonify({"error": "Request must be in JSON format"}), 400
     
     data = request.json
@@ -151,13 +145,11 @@ def sendCancellationNotification():
         mail.send(msg)
         return jsonify({"message": "Email sent successfully"}), 200
     except smtplib.SMTPException as e:
-        print(f"Failed to send email: {e}")
         return jsonify({"error": "Failed to send email", "details": str(e)}), 500
     
 @app.route("/api/sendAutomaticRejectionNotification", methods=['POST'])
 def sendAutomaticRejectionNotification():
     if not request.is_json:
-        print("Request must be in JSON format")
         return jsonify({"error": "Request must be in JSON format"}), 400
     
     data = request.json
@@ -182,7 +174,6 @@ def sendAutomaticRejectionNotification():
         mail.send(msg)
         return jsonify({"message": "Email sent successfully"}), 200
     except smtplib.SMTPException as e:
-        print(f"Failed to send email: {e}")
         return jsonify({"error": "Failed to send email", "details": str(e)}), 500
 
 

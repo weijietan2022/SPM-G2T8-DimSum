@@ -59,7 +59,6 @@ class UnitTestApplicationForm(unittest.TestCase):
             'staff_id': 140001
         })
 
-        print(response)
         self.assertEqual(response.status_code, 200)
         response_json = response.get_json()
         self.assertEqual(len(response_json), 1)

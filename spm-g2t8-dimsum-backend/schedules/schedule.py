@@ -99,13 +99,9 @@ def get_schedule():
         return jsonify({"wfh": wfh, "inOffice": inOffice}), 200
     elif userRole == 1:
         allMembers = list(user_collection.find({}))
-        print(allMembers)
         allMembersDict = {member['Staff_ID']: member['Staff_FName'] + " " + member['Staff_LName'] for member in allMembers}
         allMembersDeptDict = {member['Staff_ID']: member['Dept'] for member in allMembers}
         allRequests = list(requests_collection.find({"Apply_Date": date, "Status": {"$in": ["Pending", "Approved"]}}))
-
-        print("BELOW")
-        print(allMembersDict)
         
         for singleRequest in allRequests:
             currMemberID = singleRequest['Staff_ID']

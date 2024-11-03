@@ -11,8 +11,6 @@ class UnitTestLogin(unittest.TestCase):
         self.app = app.test_client()
         self.app.testing = True
 
-    # Test for successful login
-    # python -m unittest login_test.UnitTestLogin.test_login_success
     @patch('login.collection.find_one')
     def test_login_success(self, mock_find_one):
         mock_find_one.return_value = {

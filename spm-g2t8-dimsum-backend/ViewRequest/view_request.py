@@ -59,9 +59,6 @@ def getRequest():
     Position = request.args.get('position')  
     stat = request.args.get('status', 'Pending')
 
-    print("Received request with parameters:")
-    print(Dept, id, Position, stat)
-
     requests = ViewRequest(id, Position, Dept,stat)
 
     enriched_requests = []
@@ -90,14 +87,12 @@ def ViewRequest(id, Position, Dept, status):
 
     if "Manager" in Position or Position == "Director" or Position =='MD':
         listofids = list(collection.find({"Manager_ID": id}, {"Staff_ID": 1, "_id": 0}))
-        print(listofids)
         if listofids:
             ids = [report["Staff_ID"] for report in listofids]
             query["Staff_ID"] = {"$in": ids}
 
             requests = collection.find(query)
         else:
-            print("No report found")
             requests = []
 
     return list(requests)
@@ -131,7 +126,6 @@ def update_request_status():
     new_status = data.get('status')
     date = data.get('date')
     duration = data.get('duration')
-    print(new_status)
 
     if not request_id or new_status not in ['Approved', 'Rejected']:
         return jsonify({"error": "Invalid request data"}), 400
@@ -145,21 +139,13 @@ def update_request_status():
     try:
         collection.update_one({"Request_ID": request_id, "Apply_Date": date, "Duration": duration}, {"$set": {"Status": new_status}})
     except Exception as e:
-        print(f"Error updating request status: {str(e)}")
         return jsonify({"error": "Failed to update request status"}), 500
     
     return jsonify({"message": f"Request {new_status} successfully."}), 200
-
-    # if result.modified_count == 1:
-    #     return jsonify({"message": f"Request {new_status} successfully."}), 200
-    # else:
-    #     return jsonify({"error": "Failed to update request status"}), 500
     
 @app.route('/api/files/<file_id>', methods=['GET'])
 def download_file(file_id):
-    try:
-        print(f"Received file ID: {file_id}")
-        
+    try:        
         if not ObjectId.is_valid(file_id):
             return jsonify({"error": "Invalid file ID"}), 400
         
@@ -168,38 +154,30 @@ def download_file(file_id):
         return send_file(file, download_name=file.filename, as_attachment=True)
     
     except gridfs.errors.NoFile:
-        print(f"No file found with ID: {file_id}")
         return jsonify({"error": "File not found"}), 404
     
     except Exception as e:
-        print(f"Error downloading file: {str(e)}")
         return jsonify({"error": "An error occurred", "details": str(e)}), 500
     
 
 @app.route('/api/reject-request', methods=['POST'])
 def reject_request():
-    print(request.json)
     data = request.json
     request_id = data.get('Request_ID')
     staff_id = data.get('Staff_ID')
     request_date = data.get('Request_Date')
     request_date = datetime.fromisoformat(request_date) if isinstance(request_date, str) else request_date
-    # request_date = datetime.strptime(request_date, '%a, %d %b %Y %H:%M:%S %Z')
     apply_date = data.get('Apply_Date')
     duration = data.get('Duration')
     manager_id = data.get('Manager_ID')
     rejectionReason = data.get('rejectionReason')
-    status = 'Rejected'
-    print(rejectionReason)
     try:
              EmployeeDetails = collection_new_assignment.find_one({"Staff_ID":staff_id})
              email = EmployeeDetails.get("Email")
-             print(email)
              fname = EmployeeDetails.get("Staff_FName")
              lname = EmployeeDetails.get("Staff_LName")
              name = fname + " " + lname  
     except Exception as e:
-            print(f"There is an error: {str(e)}")
             return jsonify({"error": "An error occurred", "details": str(e)}), 500
 
     rejected = {
@@ -232,7 +210,6 @@ def reject_request():
         Reject_Collection.insert_one(rejected)
         return jsonify({"message": "Rejection submitted successfully"}), 200
     except Exception as e:
-        print("Error", e)
         return jsonify({"error": "Failed to submit into rejected database"}), 500
     
 
@@ -255,12 +232,10 @@ def approve_request():
         try:
              EmployeeDetails = collection_new_assignment.find_one({"Staff_ID":StaffID})
              email = EmployeeDetails.get("Email")
-             print(email)
              fname = EmployeeDetails.get("Staff_FName")
              lname = EmployeeDetails.get("Staff_LName")
              name = fname + " " + lname  
         except Exception as e:
-            print(f"There is an error: {str(e)}")
             return jsonify({"error": "An error occurred", "details": str(e)}), 500
         
         # change to your own email to test
@@ -290,7 +265,6 @@ def approve_request():
         return jsonify({"message": "Request Approved successfully."}), 200
     
     except Exception as e:
-                print(f"There is an error: {str(e)}")
                 return jsonify({"error": "An error occurred", "details": str(e)}), 500
 
 

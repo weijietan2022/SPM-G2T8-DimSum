@@ -9,7 +9,6 @@ class UnitTestViewRequest(unittest.TestCase):
         self.app = app.test_client()
         self.app.testing = True
 
-    # Test /api/view-request route with 'Pending' status
     @patch('view_request.collection.find')
     def test_get_view_request_pending(self, mock_find):
         # Mock database response for 'Pending' status requests
