@@ -6,11 +6,17 @@ declare -A folder_scripts=(
     ["schedules"]="schedule.py"
     ["notification"]="notification.py"
     ["login"]="login.py"
-    ["autorejection"]="autorejection.py"
     ["application-form"]="application-form.py"
 )
 
-# Loop through each script and kill any running process
+# Paths for the autorejection cron job
+PYTHON_SCRIPT="/home/project/spm-g2t8-dimsum-backend/autorejection/autorejection.py"
+
+# Step 1: Remove the autorejection cron job to stop it from running automatically
+crontab -l | grep -v "$PYTHON_SCRIPT" | crontab -
+echo "Cron job for $PYTHON_SCRIPT removed."
+
+# Step 2: Loop through each script and kill any running process
 for folder in "${!folder_scripts[@]}"; do
     # Get the Python file to be killed for the current folder
     python_file="${folder}/${folder_scripts[$folder]}"

@@ -6,11 +6,19 @@ declare -A folder_scripts=(
     ["schedules"]="schedule.py"
     ["notification"]="notification.py"
     ["login"]="login.py"
-    ["autorejection"]="autorejection.py"
     ["application-form"]="application-form.py"
 )
 
-# Loop through each folder and execute the corresponding Python script
+# Paths and schedule for the autorejection cron job
+PYTHON_SCRIPT="/home/project/spm-g2t8-dimsum-backend/autorejection/autorejection.py"
+PYTHON_BIN="/usr/bin/python3"  # Adjust the path if needed
+CRON_SCHEDULE="0 0 * * *"
+
+# Step 1: Add the cron job for autorejection.py if it doesn't already exist
+(crontab -l 2>/dev/null | grep -v "$PYTHON_SCRIPT"; echo "$CRON_SCHEDULE $PYTHON_BIN $PYTHON_SCRIPT") | crontab -
+echo "Cron job added: Runs $PYTHON_SCRIPT daily at midnight."
+
+# Step 2: Loop through each folder and execute the corresponding Python script
 for folder in "${!folder_scripts[@]}"; do
     python_file="${folder}/${folder_scripts[$folder]}"
 
