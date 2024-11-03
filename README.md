@@ -9,9 +9,25 @@
 # notification - 5003
 
 
-# Link  (http only)
+# Link (http only) -- access to our website (deployed to cloud)
 
 http://139.59.225.156
+
+
+# How To Login -- for email notification scenario purposes (changed email to our personal email)
+
+David Yap (Finance Director):
+username: weijie.tan.2022@scis.smu.edu.sg
+password: 170166
+
+Kesavan Seng (Finance Manager): 
+username: aravindks.2022@scis.smu.edu.sg
+password: 171009
+
+Mani Tan (Finance Executive):
+username: wxlum.2022@scis.smu.edu.sg
+password: 170208
+
 
 
 # cloud server installation
