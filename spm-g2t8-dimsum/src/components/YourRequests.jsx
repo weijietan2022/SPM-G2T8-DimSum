@@ -31,7 +31,6 @@ const YourRequests = () => {
         return response.json();
       })
       .then(data => {
-        console.log('Fetched data:', data);
         setRequests(data);
         setLoading(false);
       })
@@ -76,7 +75,7 @@ const YourRequests = () => {
         return response.json();
       })
       .then(data => {
-        console.log('Rejection submitted:', data);
+        alert('Rejection Successful!');
       })
       .catch(err => setError(err.message));
   };
@@ -116,7 +115,6 @@ const YourRequests = () => {
             })
             .then(data => {
               alert('Approval Successful!');
-              console.log('Approval request processed:', data);
             })
             .catch(err => setError(err.message));
         }

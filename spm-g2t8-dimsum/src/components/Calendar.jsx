@@ -51,7 +51,6 @@ const WFHCalendar = () => {
     const localDate = moment(slotInfo.start).local(); // Convert to local time
     setSelectedDate(localDate.startOf('day')); // Set to start of the day to avoid time issues
     setFilter('all');
-    console.log("Selected date:", localDate.format("YYYY-MM-DD")); // Log the selected date
 };
 
 const navigate = useNavigate();
@@ -84,8 +83,6 @@ const handleNewRequest = () => {
   const filteredInOffice = filter === 'office' ? filterMembers(requestsData.inOffice) : filter === 'WFH' ? [] : filterMembers(requestsData.inOffice);
 
   useEffect(() => {
-    console.log("Filtered WFH:", filteredWFH);
-    console.log(requestsData.wfh);
   }, [filteredWFH]);
   const allDepartments = [...new Set([...requestsData.wfh, ...requestsData.inOffice].map(person => person.department))];
 

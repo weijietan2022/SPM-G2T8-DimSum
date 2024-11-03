@@ -54,7 +54,6 @@ const ApplicationForm = () => {
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       setAttachment(e.target.files[0]);
-      console.log("Selected file:", e.target.files[0]);
     }
   };
 
@@ -120,7 +119,6 @@ const ApplicationForm = () => {
         setAttachment('');
         document.querySelector('.wfh-file-input').value = '';
 
-        console.log("success inserting into database");
         alert("successful application");
         navigate('/applicationform');
       } else {
@@ -130,8 +128,6 @@ const ApplicationForm = () => {
         setReason('');
         setAttachment('');
         document.querySelector('.wfh-file-input').value = '';
-
-        console.error(data.message);
 
         let errorMsg = "Errors:\n";
         if (Array.isArray(data.message)) {
@@ -145,7 +141,7 @@ const ApplicationForm = () => {
         alert(errorMsg.trim());
       }
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      alert('An error occurred. Please try again.');
     }
   };
 

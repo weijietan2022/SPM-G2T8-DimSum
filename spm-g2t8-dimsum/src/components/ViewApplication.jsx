@@ -32,7 +32,6 @@ const ViewApplication = () => {
       setRequests(data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching requests:', error);
       setLoading(false);
     }
   };
@@ -74,11 +73,9 @@ const ViewApplication = () => {
           alert("Successfully withdrawn the request.");
           fetchRequests();
         } else {
-          console.error('Failed to withdraw the request.');
           alert("Failed to withdraw the request.");
         }
       } catch (error) {
-        console.error('Error withdrawing request:', error);
       }
     }
   };
@@ -104,7 +101,6 @@ const ViewApplication = () => {
       const data = await response.json();
       setRejectionReason(data.reason);
     } catch (error) {
-      console.error('Error fetching rejection reason:', error);
       setRejectionReason('Failed to load rejection reason.');
     } finally {
       setLoadingReason(false);
