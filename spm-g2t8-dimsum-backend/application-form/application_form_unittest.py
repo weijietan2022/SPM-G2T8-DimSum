@@ -4,6 +4,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from application_form import app, get_next_sequence_value
 import json
+import gridfs
 
 class ApplicationFormTests(unittest.TestCase):
     @patch('application_form.MongoClient')
@@ -250,8 +251,48 @@ class ApplicationFormTests(unittest.TestCase):
         # Assert: Verify that a 404 status code is returned with the correct error message
         self.assertEqual(response.status_code, 404)
         self.assertIn(b"Request not found", response.data)
+
+
+    @patch('application_form.collection.find')  # Mock the collection find method
+    def test_get_requests_database_error(self, mock_find):
+        # Setup: Simulate a database error on find()
+        mock_find.side_effect = Exception("Database error")
+
+        # Execute: Call the get_requests endpoint
+        response = self.app.get('/api/requests?status=Approved&staff_id=123')
+
+        # Assert: Check for 500 status code and error message
+        self.assertEqual(response.status_code, 500)
+        self.assertIn(b"Failed to fetch requests", response.data)
+
+
+@patch('application_form.collection.find_one')
+def test_process_request_with_clashing_dates(self, mock_find_one):
+    # Simulate a clashing record in the database
+    mock_find_one.return_value = {
+        "Request_ID": 101,
+        "Staff_ID": 123,
+        "Apply_Date": "20 November 2024",
+        "Duration": "Full Day",
+        "Status": "Approved"
+    }
+
+    data = {
+        'date': json.dumps([{"date": "2024-11-20", "session": "Full Day"}]),
+        'reason': 'Test reason',
+        'staffId': 123,
+        'managerId': 456
+    }
+
+    response = self.app.post('/api/process_request', data=data, content_type='multipart/form-data')
+
+    self.assertEqual(response.status_code, 400)
+    self.assertIn(b"Clash found for 20 November 2024 with duration Full Day", response.data)
+
     
-
-
 if __name__ == '__main__':
     unittest.main()
+
+
+
+
