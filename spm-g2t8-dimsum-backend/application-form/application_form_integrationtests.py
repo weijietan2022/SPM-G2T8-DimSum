@@ -163,8 +163,6 @@ class UnitTestApplicationForm(unittest.TestCase):
 
         self.assertEqual(response.status_code, 404)
         response_json = response.get_json()
-        print("HERE")
-        print(response_json)
         self.assertEqual(response_json['message'], 'Request not found or already withdrawn')
 
     def test_withdraw_pendingrequest(self):
