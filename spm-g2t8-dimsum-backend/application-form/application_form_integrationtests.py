@@ -71,7 +71,8 @@ class UnitTestApplicationForm(unittest.TestCase):
             "date": json.dumps([{"date": "2024-11-12", "session": "Full Day"}, {"date":"2024-11-13", "session":"Full Day"}]),  # Send cart as JSON string
             "staffId": 140001,
             "managerId": 130002,
-            "reason": "My daughter sick"
+            "reason": "My daughter sick",
+            "file": (self.fs.put(b'file content', filename='test.txt'), 'test.txt')
         }, content_type='multipart/form-data')  # Set content type to support file uploads
 
         self.assertEqual(response.status_code, 200)

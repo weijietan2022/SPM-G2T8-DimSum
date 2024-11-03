@@ -121,6 +121,7 @@ def download_file(file_id):
         if not ObjectId.is_valid(file_id):
             return jsonify({"error": "Invalid file ID"}), 400
         
+        print(file_id)
         file = fs.get(ObjectId(file_id))
         
         return send_file(file, download_name=file.filename, as_attachment=True)

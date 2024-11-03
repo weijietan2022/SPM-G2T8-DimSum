@@ -44,30 +44,6 @@ class ApplicationFormTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json.loads(response.data)), 1)
 
-    # @patch('application_form.get_fs')  # Mock the get_fs function
-    # def test_download_file_valid_id(self, mock_get_fs):
-    #     # Create a mock file-like object
-    #     mock_file = MagicMock()
-    #     mock_file.filename = 'testfile.txt'
-    #     mock_file.read.return_value = b"mock file content"
-
-    #     # Create a mock fs and set get() to return the mock file
-    #     mock_fs = MagicMock()
-    #     mock_fs.get.return_value = mock_file
-    #     mock_get_fs.return_value = mock_fs  # get_fs() will return this mock_fs
-
-    #     # Initialize the Flask test client
-    #     self.app = app.test_client()
-    #     self.app.testing = True
-
-    #     # Call the endpoint
-    #     response = self.app.get('/api/files/605c76cfd5a3c9b01f8e4e22')
-
-    #     # Verify the response
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.headers['Content-Disposition'], 'attachment; filename=testfile.txt')
-    #     self.assertEqual(response.data, b"mock file content")
-
     @patch('application_form.send_notification')  # Mock the send_notification function
     @patch('application_form.get_next_sequence_value')  # Mock get_next_sequence_value for unique ID generation
     @patch('application_form.fs.put')  # Mock fs.put for file upload
