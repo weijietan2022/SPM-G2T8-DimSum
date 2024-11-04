@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import unittest
 import os
 from dotenv import load_dotenv
@@ -26,13 +26,27 @@ class TestAutoRejectionModule(unittest.TestCase):
         self.requests_db.collection.delete_many({})
         self.rejection_db.collection.delete_many({})
 
+        ## Calculate the next working day and the day after that
+        # Get the current day of the week
+        current_day = datetime.now().weekday()
+        # Calculate the number of days to add to reach the next working day
+        days_to_add = 1 if current_day < 4 else 4 - current_day
+        # Calculate the next working day
+        self.next_working_day = datetime.now() + timedelta(days=days_to_add)
+        # Calculate the day after the next working day, if it is a Friday, add 3 days, else add 1 day
+        self.day_after_next = self.next_working_day + timedelta(days=3 if self.next_working_day.weekday() == 4 else 1)
+        # Convert them to %d %b %Y format - should be like 04 November 2024. November should be the full month name
+        self.next_working_day_str = self.next_working_day.strftime("%d %B %Y")
+        self.day_after_next_str = self.day_after_next.strftime("%d %B %Y")
+        
+
         # Add mock data to the requests collection
         self.requests_db.collection.insert_many([
             {
                 "Request_ID": 1,
                 "Staff_ID": 999999,
                 "Request_Date": datetime.now(),
-                "Apply_Date": "04 November 2024",
+                "Apply_Date": self.next_working_day_str,
                 "Duration": "Full Day",
                 "Manager_ID": 999998,
                 "Reason": "No reason",
@@ -43,7 +57,7 @@ class TestAutoRejectionModule(unittest.TestCase):
                 "Request_ID": 2,
                 "Staff_ID": 999999,
                 "Request_Date": datetime.now(),
-                "Apply_Date": "05 November 2024",
+                "Apply_Date": self.day_after_next_str,
                 "Duration": "Full Day",
                 "Manager_ID": 999998,
                 "Reason": "No reason",
@@ -54,8 +68,9 @@ class TestAutoRejectionModule(unittest.TestCase):
 
     def tearDown(self):
         # Clear collections after each test to ensure isolation
-        self.requests_db.collection.delete_many({})
-        self.rejection_db.collection.delete_many({})
+        # self.requests_db.collection.delete_many({})
+        # self.rejection_db.collection.delete_many({})
+        pass
 
     def test_update_requests(self):
         # Run the function
