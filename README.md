@@ -1,4 +1,8 @@
 # SPM-G2T8-DimSum
+
+# Link to GitHub Repository 
+https://github.com/weijietan2022/SPM-G2T8-DimSum
+
 # npm run dev  -  local development
 # npm run build - build front end project to static files ,check the "dist" folder
 
@@ -9,7 +13,7 @@
 # notification - 5003
 
 
-# Link (http only) -- access to our website (deployed to cloud)
+# Link (http only) -- Deployment of our software release to a cloud-provider
 
 http://139.59.225.156
 
