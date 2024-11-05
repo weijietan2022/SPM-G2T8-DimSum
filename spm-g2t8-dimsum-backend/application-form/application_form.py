@@ -320,7 +320,7 @@ def withdraw_request():
     
         notification_details = {
             "name": emp_name,
-            "managerEmail": "calebyap0@gmail.com",
+            "managerEmail": manager_email,
             "managerName": manager_name,
             "requestId": request_id,
             "date": apply_date,
