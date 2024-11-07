@@ -1,22 +1,28 @@
 # SPM-G2T8-DimSum
 
-# Link to GitHub Repository 
+# Link to GitHub Repository
+
 https://github.com/weijietan2022/SPM-G2T8-DimSum
 
-# npm run dev  -  local development
+# npm install - to install module packages locally
+
+# npm run dev - local development
+
 # npm run build - build front end project to static files ,check the "dist" folder
 
 # React Port - 5173
-# login.py - 5001
-# schedule.py - 5000
-# application-form.py - 5002
-# notification - 5003
 
+# login.py - 5001
+
+# schedule.py - 5000
+
+# application-form.py - 5002
+
+# notification - 5003
 
 # Link (http only) -- Deployment of our software release to a cloud-provider
 
 http://139.59.225.156
-
 
 # How To Login -- for email notification scenario purposes (changed email to our personal email)
 
@@ -24,7 +30,7 @@ David Yap (Finance Director):
 username: weijie.tan.2022@scis.smu.edu.sg
 password: 170166
 
-Kesavan Seng (Finance Manager): 
+Kesavan Seng (Finance Manager):
 username: aravindks.2022@scis.smu.edu.sg
 password: 171009
 
@@ -32,10 +38,10 @@ Mani Tan (Finance Executive):
 username: wxlum.2022@scis.smu.edu.sg
 password: 170208
 
-
-
 # cloud server installation
+
 # Project Deployment Guide
+
 System Information
 Operating System: Ubuntu 20.04.4 LTS (Focal Fossa)
 System Type: Debian-based
@@ -48,7 +54,7 @@ Update the package index and install Nginx to serve the front-end and proxy requ
 sudo apt update
 sudo apt install nginx -y
 
-configure the nginx 
+configure the nginx
 /etc/nginx/nginx.conf
 
 Step 2: Start and Configure Nginx
@@ -78,12 +84,10 @@ Stop Back-End Services: To terminate the back-end processes, run the kill.sh scr
 
 bash kill.sh
 
-
 # how to deploy into cloud
 
 server ip address: 139.59.225.156
 access: root/spmg2t8Dimsum
-
 
 Front-End Deployment:
 Build the Front-End: Compile the front-end code from the local project, and generate the dist folder containing the optimized production files.
@@ -92,7 +96,7 @@ Restart Web Server: Reload the Nginx web server to apply the latest front-end ch
 
 Back-End Deployment:
 Copy Project Directories: Transfer the necessary backend project directories (ViewRequest, schedules, notification, login, autorejection, application-form) to the cloud server at /home/project/spm-g2t8-dimsum-backend.
-Start the Back-End Services: Execute the backend startup script to initialize the services: 
+Start the Back-End Services: Execute the backend startup script to initialize the services:
 
 bash run.sh
 
