@@ -46,6 +46,7 @@ jobs:
       env:
         NOTIFICATION_SERVICE_URL: http://localhost:5003  # URL of the Flask service
       run: |
+        python spm-g2t8-dimsum-backend/schedules/Functionaltest/us2tc/nowfh.py
         python spm-g2t8-dimsum-backend/login/login_integrationtests.py
         python spm-g2t8-dimsum-backend/schedules/schedule_integrationtest.py
         python spm-g2t8-dimsum-backend/notification/notification_integrationtests.py
