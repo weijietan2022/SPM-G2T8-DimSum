@@ -30,7 +30,7 @@ class TestAutoRejectionModule(unittest.TestCase):
         # Get the current day of the week
         current_day = datetime.now().weekday()
         # Calculate the number of days to add to reach the next working day
-        days_to_add = 1 if current_day < 4 else 4 - current_day
+        days_to_add = 1 if current_day < 4 else (3 if current_day == 4 else (2 if current_day == 5 else 1))
         # Calculate the next working day
         self.next_working_day = datetime.now() + timedelta(days=days_to_add)
         # Calculate the day after the next working day, if it is a Friday, add 3 days, else add 1 day
