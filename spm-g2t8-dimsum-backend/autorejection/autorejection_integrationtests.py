@@ -68,9 +68,9 @@ class TestAutoRejectionModule(unittest.TestCase):
 
     def tearDown(self):
         # Clear collections after each test to ensure isolation
-        # self.requests_db.collection.delete_many({})
-        # self.rejection_db.collection.delete_many({})
-        pass
+        self.requests_db.collection.delete_many({})
+        self.rejection_db.collection.delete_many({})
+        # pass
 
     def test_update_requests(self):
         # Run the function
