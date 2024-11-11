@@ -68,7 +68,7 @@ class UnitTestApplicationForm(unittest.TestCase):
     def test_process_wfh_request_success(self):
         response = self.app.post('/api/process_request', 
                                  data={
-            "date": json.dumps([{"date": "2024-11-12", "session": "Full Day"}, {"date":"2024-11-13", "session":"Full Day"}]),  # Send cart as JSON string
+            "date": json.dumps([{"date": "2025-01-13", "session": "Full Day"}, {"date":"2025-01-14", "session":"Full Day"}]),  # Send cart as JSON string
             "staffId": 140001,
             "managerId": 130002,
             "reason": "My daughter sick",
@@ -80,7 +80,7 @@ class UnitTestApplicationForm(unittest.TestCase):
     def test_process_wfh_request_missing_data(self):
         response = self.app.post('/api/process_request', 
                                  data={
-            "date": json.dumps([{"date": "2024-11-12", "session": "Full Day"}, {"date":"2024-11-13", "session":"Full Day"}]),  # Send cart as JSON string
+            "date": json.dumps([{"date": "2025-01-13", "session": "Full Day"}, {"date":"2025-01-14", "session":"Full Day"}]),  # Send cart as JSON string
             "staffId": 140001,
             "managerId": 130002,
         }, content_type='multipart/form-data')
@@ -101,7 +101,7 @@ class UnitTestApplicationForm(unittest.TestCase):
     def test_process_wfh_request_clashing_date(self):
         response = self.app.post('/api/process_request', 
                                  data={
-            "date": json.dumps([{"date": "2024-11-11", "session": "Full Day"}, {"date":"2024-11-12", "session":"Full Day"}]),  # Send cart as JSON string
+            "date": json.dumps([{"date": "2024-11-11", "session": "Full Day"}, {"date":"2025-01-13", "session":"Full Day"}]),  # Send cart as JSON string
             "staffId": 140001,
             "managerId": 130002,
             "reason": "My daughter sick"
@@ -112,7 +112,7 @@ class UnitTestApplicationForm(unittest.TestCase):
     def test_process_wfh_request_invalid_manager(self):
         response = self.app.post('/api/process_request', 
                                  data={
-            "date": json.dumps([{"date": "2024-11-12", "session": "Full Day"}, {"date":"2024-11-13", "session":"Full Day"}]),  # Send cart as JSON string
+            "date": json.dumps([{"date": "2025-01-13", "session": "Full Day"}, {"date":"2025-01-14", "session":"Full Day"}]),  # Send cart as JSON string
             "staffId": 140001,
             "managerId": 112233,
             "reason": "My daughter sick"
